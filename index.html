@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Mastery - Comprehensive Learning Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <h2>Java<span>Mastery</span></h2>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#courses">Courses</a></li>
+                    <li><a href="#progress">Progress</a></li>
+                    <li><a href="#community">Community</a></li>
+                    <li><a href="#login" onclick="openLoginModal(); return false;">Login</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Master Java from Beginner to Expert</h1>
+            <p>Interactive lessons, real-time coding, and comprehensive progress tracking to accelerate your Java journey.</p>
+            <button class="cta-button" onclick="scrollToSection('courses')">Start Learning</button>
+        </div>
+    </section>
+
+    <!-- Courses Section -->
+    <section id="courses" class="courses-section">
+        <div class="container">
+            <h2>Structured Curriculum</h2>
+            <div class="course-grid">
+                <div class="course-card" data-course="beginner">
+                    <div class="course-header">
+                        <h3>Java Fundamentals</h3>
+                        <span class="level-badge">Beginner</span>
+                    </div>
+                    <div class="course-content">
+                        <p>Learn the basics of Java programming: variables, data types, operators, and basic I/O.</p>
+                        <ul>
+                            <li>Variables and Data Types</li>
+                            <li>Arithmetic Operations</li>
+                            <li>Control Structures</li>
+                            <li>Basic Input/Output</li>
+                        </ul>
+                        <button class="start-course-btn" onclick="loadCourse('beginner')">Start Course</button>
+                    </div>
+                </div>
+                
+                <div class="course-card" data-course="intermediate">
+                    <div class="course-header">
+                        <h3>Object-Oriented Programming</h3>
+                        <span class="level-badge">Intermediate</span>
+                    </div>
+                    <div class="course-content">
+                        <p>Dive deep into OOP concepts: classes, objects, inheritance, polymorphism, and encapsulation.</p>
+                        <ul>
+                            <li>Classes and Objects</li>
+                            <li>Inheritance</li>
+                            <li>Polymorphism</li>
+                            <li>Abstraction</li>
+                        </ul>
+                        <button class="start-course-btn" onclick="loadCourse('intermediate')">Start Course</button>
+                    </div>
+                
+                <div class="course-card" data-course="advanced">
+                    <div class="course-header">
+                        <h3>Advanced Java Concepts</h3>
+                        <span class="level-badge">Advanced</span>
+                    </div>
+                    <div class="course-content">
+                        <p>Explore advanced topics: collections, streams, multithreading, and design patterns.</p>
+                        <ul>
+                            <li>Collections Framework</li>
+                            <li>Streams API</li>
+                            <li>Multithreading</li>
+                            <li>Design Patterns</li>
+                        </ul>
+                        <button class="start-course-btn" onclick="loadCourse('advanced')">Start Course</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Learning Interface -->
+    <section id="learning-interface" class="learning-section">
+        <div class="container">
+            <div class="lesson-container">
+                <div class="lesson-nav">
+                    <button id="prev-lesson" class="nav-btn">← Previous</button>
+                    <div class="lesson-title">Lesson 1: Introduction to Variables</div>
+                    <button id="next-lesson" class="nav-btn">Next →</button>
+                </div>
+                
+                <div class="lesson-content">
+                    <div class="theory-section">
+                        <h3>Concept Explanation</h3>
+                        <p>A variable is a container that holds a value which can change during program execution. In Java, variables must be declared with a specific data type before they can be used.</p>
+                        
+                        <pre><code>// Syntax: dataType variableName = value;
+int age = 25;
+double price = 19.99;
+String name = "John";</code></pre>
+                        
+                        <h4>Try it Yourself:</h4>
+                        <p>Modify the code in the editor below and click "Run Code" to see the output.</p>
+                    </div>
+                    
+                    <div class="coding-section">
+                        <div class="editor-container">
+                            <div id="editor">public class Main {
+    public static void main(String[] args) {
+        // Declare and initialize variables
+        int physics = 30;
+        int chemistry = 20;
+        int biology = 40;
+        
+        // Calculate total and percentage
+        int total = physics + chemistry + biology;
+        double percentage = (total / 300.0) * 100;
+        
+        System.out.println("Total marks: " + total);
+        System.out.println("Percentage: " + percentage + "%");
+    }
+}</div>
+                        </div>
+                        
+                        <div class="output-container">
+                            <div class="output-header">Output:</div>
+                            <pre id="output">Loading...</pre>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button id="run-code" class="btn-primary">Run Code</button>
+                            <button id="reset-code" class="btn-secondary">Reset</button>
+                            <button id="submit-answer" class="btn-success">Submit Answer</button>
+                        </div>
+                    </div>
+                
+                <div class="assessment-section">
+                    <h3>Knowledge Check</h3>
+                    <form id="quiz-form">
+                        <div class="question">
+                            <p>1. Which of the following is the correct way to declare an integer variable in Java?</p>
+                            <label><input type="radio" name="q1" value="A"> A) var number = 5;</label>
+                            <label><input type="radio" name="q1" value="B"> B) int number = 5;</label>
+                            <label><input type="radio" name="q1" value="C"> C) integer number = 5;</label>
+                            <label><input type="radio" name="q1" value="D"> D) number int = 5;</label>
+                        </div>
+                        
+                        <div class="question">
+                            <p>2. What will be the output of the following code?<br>
+                            <code>int x = 10;<br>
+                            System.out.println(x++);<br>
+                            System.out.println(++x);</code></p>
+                            <label><input type="radio" name="q2" value="A"> A) 10 11</label>
+                            <label><input type="radio" name="q2" value="B"> B) 11 12</label>
+                            <label><input type="radio" name="q2" value="C"> C) 10 12</label>
+                            <label><input type="radio" name="q2" value="D"> D) 11 11</label>
+                        </div>
+                        
+                        <button type="submit" class="btn-submit">Check Answers</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Tracking -->
+    <section id="progress" class="progress-section">
+        <div class="container">
+            <h2>Your Learning Progress</h2>
+            
+            <div class="dashboard-grid">
+                <div class="progress-card">
+                    <h3>Overall Completion</h3>
+                    <div class="progress-circle">
+                        <svg viewBox="0 0 36 36">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="circle-progress" stroke-dasharray="65, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <text x="18" y="20.35" text-anchor="middle" font-size="8">65%</text>
+                        </svg>
+                    </div>
+                
+                <div class="progress-card">
+                    <h3>Current Streak</h3>
+                    <div class="streak-count">7 days</div>
+                    <p>Keep going! You're on fire 🔥</p>
+                </div>
+                
+                <div class="progress-card">
+                    <h3>Achievements</h3>
+                    <div class="achievements-list">
+                        <div class="achievement-badge">First Steps</div>
+                        <div class="achievement-badge">Code Runner</div>
+                        <div class="achievement-badge">Problem Solver</div>
+                    </div>
+                
+                <div class="progress-card wide">
+                    <h3>Course Progress</h3>
+                    <div class="course-progress">
+                        <div class="module">
+                            <h4>Module 1: Basics</h4>
+                            <div class="module-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 100%;"></div>
+                                </div>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                        <div class="module">
+                            <h4>Module 2: Control Flow</h4>
+                            <div class="module-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%;"></div>
+                                </div>
+                                <span>75%</span>
+                            </div>
+                        </div>
+                        <div class="module">
+                            <h4>Module 3: Object-Oriented Programming</h4>
+                            <div class="module-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 30%;"></div>
+                                </div>
+                                <span>30%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Section -->
+    <section id="community" class="community-section">
+        <div class="container">
+            <h2>Learning Community</h2>
+            
+            <div class="community-grid">
+                <div class="forum-section">
+                    <h3>Discussion Forum</h3>
+                    <div class="post">
+                        <h4>How to initialize an array in Java?</h4>
+                        <p>Can someone explain the different ways to create and initialize arrays?</p>
+                        <div class="post-meta">
+                            <span>Posted by: JavaNoob</span>
+                            <span>Replies: 5</span>
+                        </div>
+                    <div class="post">
+                        <h4>Understanding Static vs Non-Static Methods</h4>
+                        <p>When should I use static methods vs instance methods?</p>
+                        <div class="post-meta">
+                            <span>Posted by: CodingEnthusiast</span>
+                            <span>Replies: 12</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-section">
+                    <h3>Live Chat</h3>
+                    <div class="chat-messages">
+                        <div class="message">
+                            <strong>Admin:</strong> Welcome to our Java learning community! Feel free to ask questions.
+                        </div>
+                        <div class="message">
+                            <strong>Student123:</strong> Just completed Module 1! Thanks for the great explanations.
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" placeholder="Type your message...">
+                        <button>Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Java Mastery</h3>
+                    <p>Empowering developers to master Java programming through interactive learning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#courses">Courses</a></li>
+                        <li><a href="#progress">Progress</a></li>
+                        <li><a href="#community">Community</a></li>
+                        <li><a href="#">Resources</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Us</h4>
+                    <p>Email: info@javamastery.com</p>
+                    <p>Support: support@javamastery.com</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Java Mastery. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="login-modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeLoginModal()">&times;</span>
+            <h2>Login</h2>
+            
+            <form id="index-login-form" onsubmit="handleIndexLogin(event)">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" name="username" placeholder="Enter your username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">Sign In</button>
+            </form>
+            
+            <div class="auth-links">
+                <p>Don't have an account? <a href="#" onclick="closeLoginModal(); openRegisterModal(); return false;">Create one</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRegisterModal()">&times;</span>
+            <h2>Create Account</h2>
+            
+            <form id="index-register-form" onsubmit="handleIndexRegister(event)">
+                <div class="form-group">
+                    <label for="reg-username">Username</label>
+                    <input type="text" id="reg-username" name="username" placeholder="Choose a username" required minlength="3">
+                </div>
+                
+                <div class="form-group">
+                    <label for="reg-email">Email</label>
+                    <input type="email" id="reg-email" name="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" name="password" placeholder="Enter password" required minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label for="reg-confirm-password">Confirm Password</label>
+                    <input type="password" id="reg-confirm-password" name="confirm-password" placeholder="Confirm password" required minlength="6">
+                </div>
+                
+                <button type="submit" class="btn-primary">Create Account</button>
+            </form>
+            
+            <div class="auth-links">
+                <p>Already have an account? <a href="#" onclick="closeRegisterModal(); openLoginModal(); return false;">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Login Modal Styles */
+        #login-modal {
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        #login-modal.show {
+            display: flex;
+        }
+
+        /* Register Modal Styles */
+        #register-modal {
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        #register-modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.3s ease-out;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content h2 {
+            margin: 0 0 30px 0;
+            color: #333;
+            font-size: 24px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            color: #999;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+
+        .modal-content .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .modal-content .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+        }
+
+        .modal-content .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .auth-links {
+            margin-top: 20px;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .auth-links p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .auth-links a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .auth-links a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+
+    <script>
+        function openLoginModal() {
+            const modal = document.getElementById('login-modal');
+            modal.classList.add('show');
+            document.body.classList.add('modal-open');
+            document.getElementById('login-username').focus();
+        }
+
+        function closeLoginModal() {
+            const modal = document.getElementById('login-modal');
+            modal.classList.remove('show');
+            if (!document.getElementById('register-modal').classList.contains('show')) {
+                document.body.classList.remove('modal-open');
+            }
+        }
+
+        function openRegisterModal() {
+            const modal = document.getElementById('register-modal');
+            modal.classList.add('show');
+            document.body.classList.add('modal-open');
+            document.getElementById('reg-username').focus();
+        }
+
+        function closeRegisterModal() {
+            const modal = document.getElementById('register-modal');
+            modal.classList.remove('show');
+            if (!document.getElementById('login-modal').classList.contains('show')) {
+                document.body.classList.remove('modal-open');
+            }
+        }
+
+        // Close modals when clicking outside of them
+        document.getElementById('login-modal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeLoginModal();
+            }
+        });
+
+        document.getElementById('register-modal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeRegisterModal();
+            }
+        });
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeLoginModal();
+                closeRegisterModal();
+            }
+        });
+
+        async function handleIndexLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            if (!username || !password) {
+                alert('Please enter both username and password');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        username: username, 
+                        password: password
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Login response:', result);
+                
+                if (result.success) {
+                    closeLoginModal();
+                    // Clear form
+                    document.getElementById('index-login-form').reset();
+                    // Redirect
+                    setTimeout(() => {
+                        window.location.href = result.redirect_url || '/dashboard';
+                    }, 500);
+                } else if (result.requires_2fa) {
+                    alert('Two-factor authentication is required. Please use the full login page.');
+                    closeLoginModal();
+                } else {
+                    alert('Login failed: ' + (result.message || 'Invalid credentials'));
+                    document.getElementById('login-password').value = '';
+                    document.getElementById('login-username').focus();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+
+        async function handleIndexRegister(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm-password').value;
+            
+            // Validation
+            if (username.length < 3) {
+                alert('Username must be at least 3 characters');
+                return;
+            }
+            
+            if (!email.includes('@')) {
+                alert('Please enter a valid email');
+                return;
+            }
+            
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        username: username, 
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    closeRegisterModal();
+                    openLoginModal();
+                    // Clear form
+                    document.getElementById('index-register-form').reset();
+                } else {
+                    alert('Registration failed: ' + (result.message || 'Please try again'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>
