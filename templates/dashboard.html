@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Learning Dashboard - Java Mastery{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="container">
+        <h2>Learning Analytics Dashboard</h2>
+        
+        <div class="dashboard-filters">
+            <div class="filter-group">
+                <label for="date-range">Date Range:</label>
+                <select id="date-range">
+                    <option value="7">Last 7 Days</option>
+                    <option value="30" selected>Last 30 Days</option>
+                    <option value="90">Last 90 Days</option>
+                    <option value="365">Last Year</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="course-filter">Course:</label>
+                <select id="course-filter">
+                    <option value="all">All Courses</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}">{{ course.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <h3>Overall Progress</h3>
+                <div class="progress-circle-large">
+                    <svg viewBox="0 36 36">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.915 15.9155 0 0 1 0 -31.831" />
+                        <path class="circle-progress" stroke-dasharray="75, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <text x="18" y="20.35" text-anchor="middle" font-size="10">75%</text>
+                    </svg>
+                </div>
+                <p>Complete 15 of 20 lessons</p>
+            </div>
+            
+            <div class="dashboard-card">
+                <h3>Learning Streak</h3>
+                <div class="streak-display">
+                    <div class="streak-number">12</div>
+                    <div class="streak-text">days</div>
+                </div>
+                <p>Keep up the great work!</p>
+            </div>
+            
+            <div class="dashboard-card">
+                <h3>Time Spent</h3>
+                <div class="time-display">
+                    <div class="time-number">24.5</div>
+                    <div class="time-unit">hours</div>
+                </div>
+                <p>This month: 8.2 hours</p>
+            </div>
+            
+            <div class="dashboard-card wide">
+                <h3>Course Progress</h3>
+                <div class="course-progress-list">
+                    {% for course in courses %}
+                    <div class="course-progress-item">
+                        <div class="course-info">
+                            <h4>{{ course.title }}</h4>
+                            <span class="course-level">{{ course.level|title }}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ course.progress_percentage if course.progress_percentage else 0 }}%;"></div>
+                        </div>
+                        <div class="progress-text">{{ course.progress_percentage if course.progress_percentage else 0 }}% ({{ course.completed_lessons if course.completed_lessons else 0 }}/{{ course.total_lessons if course.total_lessons else 0 }} lessons)</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="dashboard-card wide">
+                <h3>Learning Activity</h3>
+                <div class="chart-container">
+                    <canvas id="activityChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <div class="dashboard-card">
+                <h3>Achievements</h3>
+                <div class="achievements-grid">
+                    <div class="achievement-item">
+                        <div class="achievement-icon">🎓</div>
+                        <div class="achievement-content">
+                            <h4>First Steps</h4>
+                            <p>Completed first lesson</p>
+                            <span class="achievement-date">2023-05-15</span>
+                        </div>
+                    <div class="achievement-item">
+                        <div class="achievement-icon">🚀</div>
+                        <div class="achievement-content">
+                            <h4>Code Runner</h4>
+                            <p>Completed 5 lessons</p>
+                            <span class="achievement-date">2023-05-22</span>
+                        </div>
+                    </div>
+                    <div class="achievement-item">
+                        <div class="achievement-icon">🏆</div>
+                        <div class="achievement-content">
+                            <h4>Problem Solver</h4>
+                            <p>Achieved 80%+ on 3 quizzes</p>
+                            <span class="achievement-date">2023-06-01</span>
+                        </div>
+                    </div>
+                </div>
+            
+            <div class="dashboard-card">
+                <h3>Recent Activity</h3>
+                <div class="activity-timeline">
+                    <div class="activity-item">
+                        <div class="activity-icon">📚</div>
+                        <div class="activity-content">
+                            <h4>Completed Lesson</h4>
+                            <p>Introduction to Variables</p>
+                            <span class="activity-time">2 hours ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">📝</div>
+                        <div class="activity-content">
+                            <h4>Submitted Assignment</h4>
+                            <p>Calculator Program</p>
+                            <span class="activity-time">1 day ago</span>
+                        </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">❓</div>
+                        <div class="activity-content">
+                            <h4>Quiz Attempted</h4>
+                            <p>Conditional Statements Quiz</p>
+                            <span class="activity-time">2 days ago</span>
+                        </div>
+                    </div>
+                </div>
+            
+            <div class="dashboard-card">
+                <h3>Performance Metrics</h3>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value">85%</div>
+                        <div class="metric-label">Quiz Average</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">92%</div>
+                        <div class="metric-label">Assignment Average</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">100%</div>
+                        <div class="metric-label">Course Completion</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">4.8</div>
+                        <div class="metric-label">Rating</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Initialize dashboard charts
+document.addEventListener('DOMContentLoaded', function() {
+    // Activity chart
+    const activityCtx = document.getElementById('activityChart').getContext('2d');
+    const activityChart = new Chart(activityCtx, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7'],
+            datasets: [{
+                label: 'Time Spent (hours)',
+                data: [3.2, 4.1, 2.8, 5.3, 4.7, 6.1, 2.4],
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Update filters
+    document.getElementById('date-range').addEventListener('change', updateDashboard);
+    document.getElementById('course-filter').addEventListener('change', updateDashboard);
+});
+
+function updateDashboard() {
+    // In a real implementation, this would fetch new data based on filters
+    // For this demo, we'll just show an alert
+    const dateRange = document.getElementById('date-range').value;
+    const courseFilter = document.getElementById('course-filter').value;
+    
+    console.log(`Updating dashboard with date range: ${dateRange} days and course filter: ${courseFilter}`);
+}
+</script>
+{% endblock %}

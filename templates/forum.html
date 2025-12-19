@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}Discussion Forum - Java Mastery{% endblock %}
+
+{% block content %}
+<section class="forum-section">
+    <div class="container">
+        <div class="forum-header">
+            <h2>Learning Community Forum</h2>
+            <button class="btn-primary" onclick="showNewPostModal()">New Post</button>
+        </div>
+        
+        <div class="forum-filters">
+            <div class="filter-group">
+                <label for="category-filter">Category:</label>
+                <select id="category-filter">
+                    <option value="all">All Categories</option>
+                    <option value="beginner">Beginner Questions</option>
+                    <option value="intermediate">Intermediate Topics</option>
+                    <option value="advanced">Advanced Concepts</option>
+                    <option value="assignments">Assignment Help</option>
+                    <option value="general">General Discussion</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sort-filter">Sort by:</label>
+                <select id="sort-filter">
+                    <option value="recent">Most Recent</option>
+                    <option value="popular">Most Popular</option>
+                    <option value="unanswered">Unanswered</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="forum-content">
+            <div class="forum-threads">
+                <div class="thread-item">
+                    <div class="thread-info">
+                        <div class="thread-category">Beginner Questions</div>
+                        <h3><a href="#" onclick="showThread(1)">How to initialize an array in Java?</a></h3>
+                        <p>Can someone explain the different ways to create and initialize arrays?</p>
+                        <div class="thread-meta">
+                            <span class="thread-author">Posted by: JavaNoob</span>
+                            <span class="thread-date">2 hours ago</span>
+                            <span class="thread-replies">5 replies</span>
+                            <span class="thread-views">42 views</span>
+                        </div>
+                    </div>
+                    <div class="thread-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">12</span>
+                            <span class="stat-label">Likes</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">5</span>
+                            <span class="stat-label">Replies</span>
+                        </div>
+                    </div>
+                
+                <div class="thread-item">
+                    <div class="thread-info">
+                        <div class="thread-category">Intermediate Topics</div>
+                        <h3><a href="#" onclick="showThread(2)">Understanding Static vs Non-Static Methods</a></h3>
+                        <p>When should I use static methods vs instance methods?</p>
+                        <div class="thread-meta">
+                            <span class="thread-author">Posted by: CodingEnthusiast</span>
+                            <span class="thread-date">1 day ago</span>
+                            <span class="thread-replies">12 replies</span>
+                            <span class="thread-views">87 views</span>
+                        </div>
+                    <div class="thread-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">24</span>
+                            <span class="stat-label">Likes</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">12</span>
+                            <span class="stat-label">Replies</span>
+                        </div>
+                    </div>
+                
+                <div class="thread-item">
+                    <div class="thread-info">
+                        <div class="thread-category">Assignment Help</div>
+                        <h3><a href="#" onclick="showThread(3)">Need help with Calculator assignment</a></h3>
+                        <p>Having trouble with the division operation in my calculator program...</p>
+                        <div class="thread-meta">
+                            <span class="thread-author">Posted by: NewbieCoder</span>
+                            <span class="thread-date">3 days ago</span>
+                            <span class="thread-replies">8 replies</span>
+                            <span class="thread-views">31 views</span>
+                        </div>
+                    <div class="thread-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">5</span>
+                            <span class="stat-label">Likes</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">8</span>
+                            <span class="stat-label">Replies</span>
+                        </div>
+                    </div>
+                </div>
+            
+            <div class="forum-sidebar">
+                <div class="sidebar-widget">
+                    <h3>Active Users</h3>
+                    <ul class="active-users">
+                        <li><span class="user-status online"></span> JavaMaster (5 active posts)</li>
+                        <li><span class="user-status online"></span> CodeGuru (3 active posts)</li>
+                        <li><span class="user-status online"></span> DebuggingNinja (2 active posts)</li>
+                        <li><span class="user-status offline"></span> SyntaxError (0 active posts)</li>
+                    </ul>
+                </div>
+                
+                <div class="sidebar-widget">
+                    <h3>Forum Stats</h3>
+                    <div class="stats-list">
+                        <div class="stat">
+                            <span class="stat-label">Total Posts:</span>
+                            <span class="stat-value">1,248</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Total Topics:</span>
+                            <span class="stat-value">342</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Active Users:</span>
+                            <span class="stat-value">89</span>
+                        </div>
+                    </div>
+                
+                <div class="sidebar-widget">
+                    <h3>Recent Activity</h3>
+                    <div class="recent-activity">
+                        <div class="activity-item">
+                            <span class="activity-user">JavaNoob</span> replied to 
+                            <span class="activity-thread">How to initialize an array in Java?</span>
+                            <span class="activity-time">2 hours ago</span>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-user">CodingEnthusiast</span> created 
+                            <span class="activity-thread">Understanding Static vs Non-Static Methods</span>
+                            <span class="activity-time">1 day ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Thread View Modal -->
+<div id="thread-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content-large">
+        <div class="thread-view">
+            <div class="thread-header">
+                <h2 id="thread-title">Thread Title</h2>
+                <div class="thread-meta-full">
+                    <span class="thread-author">by <strong id="thread-author">Author</strong></span>
+                    <span class="thread-date" id="thread-date">Date</span>
+                    <span class="thread-category" id="thread-category">Category</span>
+                </div>
+            </div>
+            
+            <div class="thread-content" id="thread-content">
+                <p>Thread content goes here...</p>
+            </div>
+            
+            <div class="replies-section">
+                <h3>Replies (3)</h3>
+                <div class="reply-item">
+                    <div class="reply-author">CodeHelper</div>
+                    <div class="reply-date">2 hours ago</div>
+                    <div class="reply-content">
+                        <p>To initialize an array in Java, you can use: <code>int[] arr = new int[5];</code> or <code>int[] arr = {1, 2, 3, 4, 5};</code></p>
+                    </div>
+                    <div class="reply-actions">
+                        <button class="btn-small btn-secondary">Like (5)</button>
+                        <button class="btn-small btn-secondary">Reply</button>
+                    </div>
+                
+                <div class="reply-item">
+                    <div class="reply-author">JavaExpert</div>
+                    <div class="reply-date">1 hour ago</div>
+                    <div class="reply-content">
+                        <p>Also remember that arrays in Java are objects, so they have a length property: <code>arr.length</code></p>
+                    </div>
+                    <div class="reply-actions">
+                        <button class="btn-small btn-secondary">Like (2)</button>
+                        <button class="btn-small btn-secondary">Reply</button>
+                    </div>
+                </div>
+            
+            <div class="reply-form">
+                <h3>Your Reply</h3>
+                <textarea id="reply-content" placeholder="Write your reply here..."></textarea>
+                <div class="reply-actions">
+                    <button class="btn-secondary" onclick="closeThreadModal()">Cancel</button>
+                    <button class="btn-primary" onclick="submitReply()">Post Reply</button>
+                </div>
+            </div>
+        
+        <button class="modal-close" onclick="closeThreadModal()">&times;</button>
+    </div>
+</div>
+
+<!-- New Post Modal -->
+<div id="new-post-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content-large">
+        <div class="new-post-form">
+            <h2>Create New Post</h2>
+            <div class="form-group">
+                <label for="post-title">Title</label>
+                <input type="text" id="post-title" placeholder="Enter your post title">
+            </div>
+            <div class="form-group">
+                <label for="post-category">Category</label>
+                <select id="post-category">
+                    <option value="beginner">Beginner Questions</option>
+                    <option value="intermediate">Intermediate Topics</option>
+                    <option value="advanced">Advanced Concepts</option>
+                    <option value="assignments">Assignment Help</option>
+                    <option value="general">General Discussion</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="post-content">Content</label>
+                <textarea id="post-content" placeholder="Write your post content here..." rows="8"></textarea>
+            </div>
+            <div class="form-actions">
+                <button class="btn-secondary" onclick="closeNewPostModal()">Cancel</button>
+                <button class="btn-primary" onclick="submitNewPost()">Create Post</button>
+            </div>
+        
+        <button class="modal-close" onclick="closeNewPostModal()">&times;</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Forum functionality
+function showThread(threadId) {
+    // In a real implementation, this would fetch thread details
+    document.getElementById('thread-modal').style.display = 'block';
+    
+    // Set sample data for demonstration
+    document.getElementById('thread-title').textContent = 'How to initialize an array in Java?';
+    document.getElementById('thread-author').textContent = 'JavaNoob';
+    document.getElementById('thread-date').textContent = '2 hours ago';
+    document.getElementById('thread-category').textContent = 'Beginner Questions';
+    document.getElementById('thread-content').innerHTML = '<p>Can someone explain the different ways to create and initialize arrays? I\'m a bit confused about the syntax.</p>';
+}
+
+function closeThreadModal() {
+    document.getElementById('thread-modal').style.display = 'none';
+}
+
+function showNewPostModal() {
+    document.getElementById('new-post-modal').style.display = 'block';
+}
+
+function closeNewPostModal() {
+    document.getElementById('new-post-modal').style.display = 'none';
+}
+
+function submitReply() {
+    const replyContent = document.getElementById('reply-content').value;
+    if (replyContent.trim() === '') {
+        alert('Please enter your reply');
+        return;
+    }
+    
+    // In a real implementation, this would submit to the server
+    alert('Reply submitted successfully!');
+    document.getElementById('reply-content').value = '';
+}
+
+function submitNewPost() {
+    const title = document.getElementById('post-title').value;
+    const category = document.getElementById('post-category').value;
+    const content = document.getElementById('post-content').value;
+    
+    if (title.trim() === '' || content.trim() === '') {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    // In a real implementation, this would submit to the server
+    alert('Post created successfully!');
+    document.getElementById('post-title').value = '';
+    document.getElementById('post-content').value = '';
+    closeNewPostModal();
+}
+
+// Filter functionality
+document.getElementById('category-filter').addEventListener('change', function() {
+    // In a real implementation, this would filter threads
+    console.log('Filtering by category:', this.value);
+});
+
+document.getElementById('sort-filter').addEventListener('change', function() {
+    // In a real implementation, this would sort threads
+    console.log('Sorting by:', this.value);
+});
+</script>
+{% endblock %}

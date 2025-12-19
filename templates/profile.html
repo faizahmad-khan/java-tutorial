@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Java Mastery{% endblock %}
+
+{% block content %}
+<section class="profile-section">
+    <div class="container">
+        <h2>User Profile</h2>
+        
+        <div class="profile-grid">
+            <div class="profile-card">
+                <h3>Account Information</h3>
+                <p><strong>Username:</strong> {{ current_user.username }}</p>
+                <p><strong>Email:</strong> {{ current_user.email }}</p>
+                <p><strong>Role:</strong> {{ current_user.role.title() }}</p>
+                <p><strong>Member Since:</strong> {{ current_user.date_created.strftime('%B %d, %Y') }}</p>
+                
+                <button class="btn-primary" onclick="toggle2FA()">Manage 2FA</button>
+            </div>
+            
+            <div class="profile-card">
+                <h3>Two-Factor Authentication</h3>
+                <p>Status: 
+                    <span id="2fa-status" class="status-indicator">
+                        {% if current_user.is_2fa_enabled %}Enabled{% else %}Disabled{% endif %}
+                    </span>
+                </p>
+                
+                <div id="2fa-setup" style="display: none; margin-top: 20px;">
+                    <div id="setup-not-enabled">
+                        <p>Scan the QR code below with your authenticator app:</p>
+                        <div id="qr-container" style="text-align: center; margin: 20px 0;"></div>
+                        <div class="form-group">
+                            <label for="verification-code">Enter 6-digit code from app:</label>
+                            <input type="text" id="verification-code" maxlength="6" placeholder="000000">
+                        </div>
+                        <button class="btn-primary" onclick="verify2FA()">Verify & Enable</button>
+                    </div>
+                    <div id="setup-enabled">
+                        <p>2FA is currently enabled. To disable, enter your current code:</p>
+                        <div class="form-group">
+                            <label for="disable-code">Current 2FA Code:</label>
+                            <input type="text" id="disable-code" maxlength="6" placeholder="00000">
+                        </div>
+                        <button class="btn-danger" onclick="disable2FA()">Disable 2FA</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-card">
+                <h3>Recent Achievements</h3>
+                {% if achievements %}
+                    <ul class="achievement-list">
+                        {% for achievement in achievements %}
+                            <li>
+                                <span class="achievement-icon">🏆</span>
+                                <div>
+                                    <h4>{{ achievement.name }}</h4>
+                                    <p>{{ achievement.description }}</p>
+                                    <small>{{ achievement.date_earned.strftime('%B %d, %Y') }}</small>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No achievements yet. Keep learning to earn badges!</p>
+                {% endif %}
+            </div>
+            
+            <div class="profile-card">
+                <h3>Learning Progress</h3>
+                {% if progress %}
+                    <p>Completed <span id="completed-count">{{ progress|selectattr('completed', 'equalto', true)|list|length }}</span> of <span id="total-count">{{ progress|length }}</span> lessons</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                {% else %}
+                    <p>No progress data available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+let qrCodeUrl = null;
+
+// Set initial display states based on 2FA status
+document.addEventListener('DOMContentLoaded', function() {
+    // Set 2FA setup display based on current status
+    const is2FAEnabled = document.getElementById('2fa-status').textContent.trim() === 'Enabled';
+    document.getElementById('setup-not-enabled').style.display = is2FAEnabled ? 'none' : 'block';
+    document.getElementById('setup-enabled').style.display = is2FAEnabled ? 'block' : 'none';
+    
+    // Set progress bar width
+    {% if progress %}
+        const completedCount = {{ progress|selectattr('completed', 'equalto', true)|list|length }};
+        const totalCount = {{ progress|length }};
+        const percentage = totalCount > 0 ? (completedCount / totalCount * 100) : 0;
+        document.getElementById('progress-fill').style.width = percentage + '%';
+    {% endif %}
+});
+
+function toggle2FA() {
+    const setupDiv = document.getElementById('2fa-setup');
+    setupDiv.style.display = setupDiv.style.display === 'none' ? 'block' : 'none';
+    
+    // If 2FA is not enabled and setup is now visible, start the setup process
+    if (setupDiv.style.display === 'block') {
+        const statusText = document.getElementById('2fa-status').textContent.trim();
+        if (statusText === 'Disabled') {
+            enable2FA();
+        }
+    }
+}
+
+async function enable2FA() {
+    try {
+        const response = await fetch('/enable_2fa', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Display QR code
+            document.getElementById('qr-container').innerHTML = 
+                `<img src="data:image/png;base64,${result.qr_code}" alt="QR Code">`;
+            qrCodeUrl = result.uri;
+        } else {
+            alert('Error: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    }
+}
+
+async function verify2FA() {
+    const token = document.getElementById('verification-code').value;
+    
+    if (!token || token.length !== 6) {
+        alert('Please enter a valid 6-digit code.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/verify_2fa', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ token: token })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('2FA enabled successfully!');
+            document.getElementById('2fa-status').textContent = 'Enabled';
+            document.getElementById('setup-not-enabled').style.display = 'none';
+            document.getElementById('setup-enabled').style.display = 'block';
+        } else {
+            alert('Error: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    }
+}
+
+async function disable2FA() {
+    const token = document.getElementById('disable-code').value;
+    
+    if (!token || token.length !== 6) {
+        alert('Please enter a valid 6-digit code.');
+        return;
+    }
+    
+    try {
+        // In a real implementation, you would call an endpoint to disable 2FA
+        // For now, just show a message
+        alert('In a full implementation, this would disable 2FA after verifying the code.');
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    }
+}
+</script>
+{% endblock %}

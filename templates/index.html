@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section id="home" class="hero">
+    <div class="hero-content">
+        <h1>Master Java from Beginner to Expert</h1>
+        <p>Interactive lessons, real-time coding, and comprehensive progress tracking to accelerate your Java journey.</p>
+        <button class="cta-button" onclick="scrollToSection('courses')">Start Learning</button>
+    </div>
+</section>
+
+<!-- Courses Section -->
+<section id="courses" class="courses-section">
+    <div class="container">
+        <h2>Structured Curriculum</h2>
+        <div class="course-grid">
+            {% for course in courses %}
+            <div class="course-card" data-course="{{ course.level }}">
+                <div class="course-header">
+                    <h3>{{ course.title }}</h3>
+                    <span class="level-badge">{{ course.level|title }}</span>
+                </div>
+                <div class="course-content">
+                    <p>{{ course.description }}</p>
+                    <ul>
+                        {% for lesson in course.lessons[:4] %}
+                        <li>{{ lesson.title }}</li>
+                        {% endfor %}
+                        {% if course.lessons|length > 4 %}
+                        <li>... and more</li>
+                        {% endif %}
+                    </ul>
+                    <button class="start-course-btn" onclick="loadCourse('{{ course.level }}')">Start Course</button>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Learning Interface -->
+<section id="learning-interface" class="learning-section">
+    <div class="container">
+        <div class="lesson-container">
+            <div class="lesson-nav">
+                <button id="prev-lesson" class="nav-btn">← Previous</button>
+                <div class="lesson-title">Lesson 1: Introduction to Variables</div>
+                <button id="next-lesson" class="nav-btn">Next →</button>
+            </div>
+            
+            <div class="lesson-content">
+                <div class="theory-section">
+                    <h3>Concept Explanation</h3>
+                    <p>A variable is a container that holds a value which can change during program execution. In Java, variables must be declared with a specific data type before they can be used.</p>
+                    
+                    <pre><code>// Syntax: dataType variableName = value;
+int age = 25;
+double price = 19.99;
+String name = "John";</code></pre>
+                    
+                    <h4>Try it Yourself:</h4>
+                    <p>Modify the code in the editor below and click "Run Code" to see the output.</p>
+                </div>
+                
+                <div class="coding-section">
+                    <div class="editor-container">
+                        <div id="editor">public class Main {
+    public static void main(String[] args) {
+        // Declare and initialize variables
+        int physics = 30;
+        int chemistry = 20;
+        int biology = 40;
+        
+        // Calculate total and percentage
+        int total = physics + chemistry + biology;
+        double percentage = (total / 300.0) * 100;
+        
+        System.out.println("Total marks: " + total);
+        System.out.println("Percentage: " + percentage + "%");
+    }
+}</div>
+                    </div>
+                    
+                    <div class="output-container">
+                        <div class="output-header">Output:</div>
+                        <pre id="output">Loading...</pre>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button id="run-code" class="btn-primary">Run Code</button>
+                        <button id="reset-code" class="btn-secondary">Reset</button>
+                        <button id="submit-answer" class="btn-success">Submit Answer</button>
+                    </div>
+                </div>
+            
+            <div class="assessment-section">
+                <h3>Knowledge Check</h3>
+                <form id="quiz-form">
+                    <div class="question">
+                        <p>1. Which of the following is the correct way to declare an integer variable in Java?</p>
+                        <label><input type="radio" name="q1" value="A"> A) var number = 5;</label>
+                        <label><input type="radio" name="q1" value="B"> B) int number = 5;</label>
+                        <label><input type="radio" name="q1" value="C"> C) integer number = 5;</label>
+                        <label><input type="radio" name="q1" value="D"> D) number int = 5;</label>
+                    </div>
+                    
+                    <div class="question">
+                        <p>2. What will be the output of the following code?<br>
+                        <code>int x = 10;<br>
+                        System.out.println(x++);<br>
+                        System.out.println(++x);</code></p>
+                        <label><input type="radio" name="q2" value="A"> A) 10 11</label>
+                        <label><input type="radio" name="q2" value="B"> B) 11 12</label>
+                        <label><input type="radio" name="q2" value="C"> C) 10 12</label>
+                        <label><input type="radio" name="q2" value="D"> D) 11 11</label>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Check Answers</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Progress Tracking -->
+<section id="progress" class="progress-section">
+    <div class="container">
+        <h2>Your Learning Progress</h2>
+        
+        <div class="dashboard-grid">
+            <div class="progress-card">
+                <h3>Overall Completion</h3>
+                <div class="progress-circle">
+                    <svg viewBox="0 0 36 36">
+                        <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 1 0 31.831 a 15.915 15.9155 0 0 1 0 -31.831" />
+                        <path class="circle-progress" stroke-dasharray="65, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <text x="18" y="20.35" text-anchor="middle" font-size="8">65%</text>
+                    </svg>
+                </div>
+            
+            <div class="progress-card">
+                <h3>Current Streak</h3>
+                <div class="streak-count">7 days</div>
+                <p>Keep going! You're on fire 🔥</p>
+            </div>
+            
+            <div class="progress-card">
+                <h3>Achievements</h3>
+                <div class="achievements-list">
+                    <div class="achievement-badge">First Steps</div>
+                    <div class="achievement-badge">Code Runner</div>
+                    <div class="achievement-badge">Problem Solver</div>
+                </div>
+            
+            <div class="progress-card wide">
+                <h3>Course Progress</h3>
+                <div class="course-progress">
+                    <div class="module">
+                        <h4>Module 1: Basics</h4>
+                        <div class="module-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%;"></div>
+                            </div>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                    <div class="module">
+                        <h4>Module 2: Control Flow</h4>
+                        <div class="module-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%;"></div>
+                            </div>
+                            <span>75%</span>
+                        </div>
+                    </div>
+                    <div class="module">
+                        <h4>Module 3: Object-Oriented Programming</h4>
+                        <div class="module-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 30%;"></div>
+                            </div>
+                            <span>30%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Video Tutorials Section -->
+<section id="videos" class="video-section">
+    <div class="container">
+        <h2>Video Tutorials</h2>
+        <div class="video-container">
+            <div class="video-player">
+                <p>Video Player (Placeholder)</p>
+            </div>
+            <div class="video-info">
+                <h3>Introduction to Variables in Java</h3>
+                <p>Learn about variables, data types, and how to declare and initialize them in Java</p>
+            </div>
+            <div class="video-thumbnails">
+                <div class="video-thumbnail" onclick="loadVideo('variables')">
+                    <div class="thumbnail-image">Variables</div>
+                    <div class="thumbnail-info">
+                        <h4>Variables in Java</h4>
+                        <div class="duration">12:35</div>
+                    </div>
+                </div>
+                <div class="video-thumbnail" onclick="loadVideo('operators')">
+                    <div class="thumbnail-image">Operators</div>
+                    <div class="thumbnail-info">
+                        <h4>Arithmetic Operators</h4>
+                        <div class="duration">10:42</div>
+                    </div>
+                <div class="video-thumbnail" onclick="loadVideo('conditionals')">
+                    <div class="thumbnail-image">Conditionals</div>
+                    <div class="thumbnail-info">
+                        <h4>Conditional Statements</h4>
+                        <div class="duration">15:20</div>
+                    </div>
+                <div class="video-thumbnail" onclick="loadVideo('loops')">
+                    <div class="thumbnail-image">Loops</div>
+                    <div class="thumbnail-info">
+                        <h4>Looping Constructs</h4>
+                        <div class="duration">18:10</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Community Section -->
+<section id="community" class="community-section">
+    <div class="container">
+        <h2>Learning Community</h2>
+        
+        <div class="community-grid">
+            <div class="forum-section">
+                <h3>Discussion Forum</h3>
+                <div class="post">
+                    <h4>How to initialize an array in Java?</h4>
+                    <p>Can someone explain the different ways to create and initialize arrays?</p>
+                    <div class="post-meta">
+                        <span>Posted by: JavaNoob</span>
+                        <span>Replies: 5</span>
+                    </div>
+                <div class="post">
+                    <h4>Understanding Static vs Non-Static Methods</h4>
+                    <p>When should I use static methods vs instance methods?</p>
+                    <div class="post-meta">
+                        <span>Posted by: CodingEnthusiast</span>
+                        <span>Replies: 12</span>
+                    </div>
+                </div>
+            
+            <div class="chat-section">
+                <h3>Live Chat</h3>
+                <div class="chat-messages">
+                    <div class="message">
+                        <strong>Admin:</strong> Welcome to our Java learning community! Feel free to ask questions.
+                    </div>
+                    <div class="message">
+                        <strong>Student123:</strong> Just completed Module 1! Thanks for the great explanations.
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" placeholder="Type your message...">
+                    <button>Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Java Mastery - Comprehensive Learning Platform{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <h2>Java<span>Mastery</span></h2>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="{{ url_for('home') }}">Home</a></li>
+                    <li><a href="{{ url_for('forum') }}">Forum</a></li>
+                    {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                        <li><a href="{{ url_for('register') }}">Sign Up</a></li>
+                    {% endif %}
+                </ul>
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Java Mastery</h3>
+                    <p>Empowering developers to master Java programming through interactive learning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{{ url_for('home') }}">Home</a></li>
+                        <li><a href="#">Courses</a></li>
+                        <li><a href="#">Progress</a></li>
+                        <li><a href="#">Community</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Us</h4>
+                    <p>Email: info@javamastery.com</p>
+                    <p>Support: support@javamastery.com</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Java Mastery. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Java Coding Help</h3>
+                    <span class="close-btn" onclick="closeHelp()">&times;</span>
+                </div>
+                <div class="help-container">
+                    <div class="help-menu">
+                        <ul>
+                            <li class="active" onclick="showHelpTopic('syntax')"><a href="#">Syntax Guide</a></li>
+                            <li onclick="showHelpTopic('basics')"><a href="#">Java Basics</a></li>
+                            <li onclick="showHelpTopic('examples')"><a href="#">Code Examples</a></li>
+                            <li onclick="showHelpTopic('snippets')"><a href="#">Code Snippets</a></li>
+                            <li onclick="showHelpTopic('debugging')"><a href="#">Debugging Tips</a></li>
+                            <li onclick="showHelpTopic('resources')"><a href="#">Resources</a></li>
+                        </ul>
+                    </div>
+                    <div class="help-content-container">
+                        <div id="syntax-content" class="help-content">
+                            <h4>Java Syntax Guide</h4>
+                            <p>Java is a class-based, object-oriented programming language. Here are the basic syntax rules:</p>
+                            <ul>
+                                <li>All code must be inside a class</li>
+                                <li>Class names should start with an uppercase letter</li>
+                                <li>Method names should start with a lowercase letter</li>
+                                <li>Curly braces {} define the beginning and ending of a block of code</li>
+                                <li>Semicolons ; terminate statements</li>
+                                <li>Java is case-sensitive</li>
+                            </ul>
+                            <h5>Basic Structure:</h5>
+                            <pre><code>public class ClassName {
+   public static void main(String[] args) {
+       // Your code here
+   }
+}</code></pre>
+                        </div>
+                        
+                        <div id="basics-content" class="help-content" style="display:none;">
+                            <h4>Java Basics</h4>
+                            <h5>Data Types</h5>
+                            <table class="help-table">
+                                <tr><th>Type</th><th>Description</th><th>Example</th></tr>
+                                <tr><td>int</td><td>Integer numbers</td><td>int age = 25;</td></tr>
+                                <tr><td>double</td><td>Decimal numbers</td><td>double price = 19.99;</td></tr>
+                                <tr><td>boolean</td><td>True/false values</td><td>boolean isActive = true;</td></tr>
+                                <tr><td>String</td><td>Text values</td><td>String name = "John";</td></tr>
+                            </table>
+                            
+                            <h5>Common Operators</h5>
+                            <ul>
+                                <li>Arithmetic: +, -, *, /, %</li>
+                                <li>Comparison: ==, !=, <, >, <=, >=</li>
+                                <li>Logical: &&, ||, !</li>
+                            </ul>
+                        </div>
+                        
+                        <div id="examples-content" class="help-content" style="display:none;">
+                            <h4>Common Code Examples</h4>
+                            <h5>Variables and Data Types</h5>
+                            <pre><code>int number = 10;
+double decimal = 3.14;
+boolean isTrue = false;
+String text = "Hello, World!";
+
+System.out.println(number);
+System.out.println(decimal);
+System.out.println(isTrue);
+System.out.println(text);</code></pre>
+                            
+                            <h5>Conditional Statements</h5>
+                            <pre><code>int age = 18;
+if (age >= 18) {
+   System.out.println("Adult");
+} else {
+   System.out.println("Minor");
+}</code></pre>
+                            
+                            <h5>Loops</h5>
+                            <pre><code>// For loop
+for (int i = 0; i < 5; i++) {
+   System.out.println("Count: " + i);
+}
+
+// While loop
+int j = 0;
+while (j < 5) {
+   System.out.println("While: " + j);
+   j++;
+}</code></pre>
+                        </div>
+                        
+                        <div id="snippets-content" class="help-content" style="display:none;">
+                            <h4>Useful Code Snippets</h4>
+                            <h5>Hello World</h5>
+                            <div class="snippet">
+                                <pre><code>public class HelloWorld {
+   public static void main(String[] args) {
+       System.out.println("Hello, World!");
+   }
+}</code></pre>
+                                <button class="btn-insert" data-snippet="public class HelloWorld {
+   public static void main(String[] args) {
+       System.out.println("Hello, World!");
+   }
+}">Insert Code</button>
+                            </div>
+                            
+                            <h5>Simple Calculator</h5>
+                            <div class="snippet">
+                                <pre><code>import java.util.Scanner;
+
+public class Calculator {
+   public static void main(String[] args) {
+       Scanner scanner = new Scanner(System.in);
+       
+       System.out.print("Enter first number: ");
+       double num1 = scanner.nextDouble();
+       
+       System.out.print("Enter second number: ");
+       double num2 = scanner.nextDouble();
+       
+       System.out.println("Sum: " + (num1 + num2));
+       System.out.println("Difference: " + (num1 - num2));
+       System.out.println("Product: " + (num1 * num2));
+       System.out.println("Quotient: " + (num1 / num2));
+       
+       scanner.close();
+   }
+}</code></pre>
+                                <button class="btn-insert" data-snippet="import java.util.Scanner;
+
+public class Calculator {
+   public static void main(String[] args) {
+       Scanner scanner = new Scanner(System.in);
+       
+       System.out.print("Enter first number: ");
+       double num1 = scanner.nextDouble();
+       
+       System.out.print("Enter second number: ");
+       double num2 = scanner.nextDouble();
+       
+       System.out.println("Sum: " + (num1 + num2));
+       System.out.println("Difference: " + (num1 - num2));
+       System.out.println("Product: " + (num1 * num2));
+       System.out.println("Quotient: " + (num1 / num2));
+       
+       scanner.close();
+   }
+}">Insert Code</button>
+                            </div>
+                            
+                            <h5>Array Example</h5>
+                            <div class="snippet">
+                                <pre><code>public class ArrayExample {
+   public static void main(String[] args) {
+       // Create an array of integers
+       int[] numbers = {10, 20, 30, 40, 50};
+       
+       // Print all elements
+       for (int i = 0; i < numbers.length; i++) {
+           System.out.println("Element at index " + i + ": " + numbers[i]);
+       }
+   }
+}</code></pre>
+                                <button class="btn-insert" data-snippet="public class ArrayExample {
+   public static void main(String[] args) {
+       // Create an array of integers
+       int[] numbers = {10, 20, 30, 40, 50};
+       
+       // Print all elements
+       for (int i = 0; i < numbers.length; i++) {
+           System.out.println("Element at index " + i + ": " + numbers[i]);
+       }
+   }
+}">Insert Code</button>
+                            </div>
+                        </div>
+                        
+                        <div id="debugging-content" class="help-content" style="display:none;">
+                            <h4>Debugging Tips</h4>
+                            <h5>Common Errors and Solutions</h5>
+                            <ul>
+                                <li><strong>Semicolon expected:</strong> Forgot to add ; at the end of a statement</li>
+                                <li><strong>Cannot find symbol:</strong> Misspelled a variable or method name</li>
+                                <li><strong>Class names must start with uppercase:</strong> Naming convention violation</li>
+                                <li><strong>Reached end of file while parsing:</strong> Missing closing brace }</li>
+                                <li><strong>Exception in thread "main":</strong> Runtime error, often caused by invalid operations</li>
+                            </ul>
+                            
+                            <h5>Debugging Techniques</h5>
+                            <ol>
+                                <li>Read the error message carefully</li>
+                                <li>Check line numbers mentioned in error</li>
+                                <li>Use System.out.println() to print variable values</li>
+                                <li>Verify all braces are properly matched</li>
+                                <li>Ensure all statements end with semicolons</li>
+                                <li>Check for typos in variable/method names</li>
+                            </ol>
+                        </div>
+                        
+                        <div id="resources-content" class="help-content" style="display:none;">
+                            <h4>Additional Resources</h4>
+                            <ul>
+                                <li><a href="https://docs.oracle.com/javase/tutorial/" target="_blank">Official Java Tutorials</a></li>
+                                <li><a href="https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html" target="_blank">Java Documentation</a></li>
+                                <li><a href="https://dev.java/" target="_blank">Java Developer Resources</a></li>
+                                <li><a href="https://www.baeldung.com/java-tutorial" target="_blank">Baeldung Java Guide</a></li>
+                                <li><a href="https://howtodoinjava.com/java-tutorial/" target="_blank">HowToDoInJava</a></li>
+                            </ul>
+                            
+                            <h5>Practice Platforms</h5>
+                            <ul>
+                                <li><a href="https://leetcode.com/" target="_blank">LeetCode</a></li>
+                                <li><a href="https://www.hackerrank.com/domains/tutorials/10-days-of-java" target="_blank">HackerRank</a></li>
+                                <li><a href="https://codingbat.com/java" target="_blank">CodingBat</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+            });
+        });
+        
+        // Help modal functionality
+        function openHelp() {
+            document.getElementById('help-modal').style.display = 'block';
+        }
+        
+        function closeHelp() {
+            document.getElementById('help-modal').style.display = 'none';
+        }
+        
+        // Function to show specific help content
+        function showHelpTopic(topic) {
+            // Hide all help content sections
+            document.querySelectorAll('.help-content').forEach(function(content) {
+                content.style.display = 'none';
+            });
+            
+            // Show the selected topic
+            document.getElementById(topic + '-content').style.display = 'block';
+            
+            // Update active state of menu items
+            document.querySelectorAll('.help-menu li').forEach(function(item) {
+                item.classList.remove('active');
+            });
+            
+            // Find the clicked element and make it active
+            const clickedElement = event.target.tagName === 'A' ? event.target.parentElement :
+                                  event.target.tagName === 'LI' ? event.target :
+                                  event.target.parentElement;
+            clickedElement.classList.add('active');
+        }
+        
+        // Function to insert a code snippet into the editor
+        function insertSnippet(snippet) {
+            // This function would insert the code into the active editor
+            // In a real implementation, it would interact with the ACE editor
+            if (window.editor) {
+                // Get the current cursor position
+                const pos = window.editor.getCursorPosition();
+                // Insert the snippet at the cursor position
+                window.editor.session.insert(pos, snippet);
+            } else {
+                // Fallback: store in session storage and notify user
+                sessionStorage.setItem('pendingSnippet', snippet);
+                alert('Code snippet copied to editor. Please navigate to a lesson to see it inserted.');
+            }
+        }
+        
+        // Close modal when clicking outside content
+        window.onclick = function(event) {
+            const modal = document.getElementById('help-modal');
+            if (event.target === modal) {
+                closeHelp();
+            }
+        }
+        
+        // Add event listeners to insert buttons after page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const insertButtons = document.querySelectorAll('.btn-insert');
+            insertButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const snippet = this.getAttribute('data-snippet');
+                    if (snippet) {
+                        insertSnippet(snippet);
+                        closeHelp();
+                    }
+                });
+            });
+        });
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
