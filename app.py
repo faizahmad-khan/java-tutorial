@@ -207,6 +207,19 @@ class Assignment(db.Model):
 
 class AssignmentSubmission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'), nullable=False)
+    submission_text = db.Column(db.Text)
+    submission_file = db.Column(db.String(200))
+    submission_code = db.Column(db.Text)
+    score = db.Column(db.Float)
+    feedback = db.Column(db.Text)
+    status = db.Column(db.String(20), default='submitted')  # submitted, graded, pending
+    date_submitted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_graded = db.Column(db.DateTime)
+
+    def __repr__(self):
+        return f"AssignmentSubmission(user_id={self.user_id}, assignment_id={self.assignment_id})"
 
 # Forms for Admin to Add/Edit Content
 class CourseForm(FlaskForm):
@@ -2321,7 +2334,7 @@ def edit_course(course_id):
 @app.route('/admin/delete_course/<int:course_id>', methods=['POST'])
 @login_required
 @admin_required
-def delete_course(course_id):
+def admin_delete_course(course_id):
     course = Course.query.get_or_404(course_id)
     db.session.delete(course)
     db.session.commit()
@@ -2376,7 +2389,7 @@ def edit_lesson(lesson_id):
 @app.route('/admin/delete_lesson/<int:lesson_id>', methods=['POST'])
 @login_required
 @admin_required
-def delete_lesson(lesson_id):
+def admin_delete_lesson(lesson_id):
     lesson = Lesson.query.get_or_404(lesson_id)
     db.session.delete(lesson)
     db.session.commit()
@@ -2444,7 +2457,7 @@ def edit_quiz(quiz_id):
 @app.route('/admin/delete_quiz/<int:quiz_id>', methods=['POST'])
 @login_required
 @admin_required
-def delete_quiz(quiz_id):
+def admin_delete_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
     db.session.delete(quiz)
     db.session.commit()
@@ -2497,11 +2510,11 @@ def edit_assignment(assignment_id):
 @app.route('/admin/delete_assignment/<int:assignment_id>', methods=['POST'])
 @login_required
 @admin_required
-def delete_assignment(assignment_id):
+def admin_delete_assignment(assignment_id):
     assignment = Assignment.query.get_or_404(assignment_id)
     db.session.delete(assignment)
     db.session.commit()
     return redirect(url_for('admin_dashboard'))
 
-
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True, host='127.0.0.1', port=8000)
