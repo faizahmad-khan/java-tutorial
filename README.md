@@ -1,271 +1,162 @@
 # Java Mastery Platform
 
-A comprehensive Java learning platform that guides users from absolute beginner level to advanced proficiency through a structured curriculum. The platform features interactive coding environments, progress tracking, assessments, and social learning features.
+A comprehensive Java learning platform with interactive code execution, progress tracking, quizzes, assignments, and an admin panel for content management.
+
+## 🚀 Quick Access
+
+**Access the platform here:** [http://localhost:8000](http://localhost:8000)
 
 ## Features
 
-### Core Features
-- **Structured Curriculum**: Beginner to advanced Java lessons with a logical progression
-- **Interactive Code Editor**: Real-time code execution with syntax highlighting
-- **Progress Tracking**: Detailed analytics and achievement badges
-- **Assessment System**: Quizzes and assignments with automatic grading
-- **Video Tutorials**: High-quality instructional videos with closed captions
-- **Certificate Generation**: Automated certificates upon course completion
-
-### Technical Features
-- **Secure Authentication**: Role-based access control with user management
-- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
-- **Cross-browser Compatibility**: Works across all modern browsers
-- **Accessibility**: Compliant with WCAG guidelines
-- **Performance Optimized**: Fast loading times and efficient resource usage
-
-### Social Features
-- **Discussion Forums**: Topic-based discussion threads
-- **Peer Collaboration**: Code sharing and review capabilities
-- **Live Chat**: Real-time communication with instructors and peers
+- **Interactive Code Editor**: Real-time Java code execution with syntax highlighting
+- **Structured Curriculum**: Beginner to advanced lessons
+- **Progress Tracking**: Analytics and achievement badges
+- **Quizzes & Assignments**: Automated grading
+- **Discussion Forum**: Community learning
+- **Admin Panel**: Content management system
+- **Secure Authentication**: Role-based access control
 
 ## Technology Stack
 
-### Backend
-- **Python Flask**: Web framework for backend services
-- **SQLAlchemy**: Database ORM for data persistence
-- **Flask-Login**: User session management
-- **Flask-Bcrypt**: Password hashing and security
+- **Backend**: Python Flask, SQLAlchemy ORM
+- **Frontend**: HTML5, CSS3, JavaScript, Ace Editor
+- **Database**: SQLite (development), PostgreSQL (production)
+- **Java Execution**: Secure sandboxed Java runner
 
-### Frontend
-- **HTML5/CSS3/JavaScript**: Core web technologies
-- **Ace Editor**: Advanced code editor with syntax highlighting
-- **Chart.js**: Data visualization for progress tracking
-- **Bootstrap**: Responsive layout framework
-
-### Java Execution
-- **Secure Java Runner**: Sandboxed Java code execution environment
-- **Process Management**: Safe execution with timeout and resource limits
-
-## Live Platform / Access
-
-### Local Development
-To run the Java Mastery Platform locally on your machine:
-
-```bash
-python app.py
-```
-Then access the platform at: **[http://localhost:5000](http://localhost:5000)**
-
-### Deployment Options
-The platform can be deployed to various hosting services:
-
-- **Heroku**: Free tier available for testing
-- **AWS (Elastic Beanstalk)**: Scalable cloud hosting
-- **Google Cloud Platform (App Engine)**: Container-based deployment
-- **Azure (App Service)**: Microsoft cloud platform
-- **PythonAnywhere**: Beginner-friendly Python hosting
-- **DigitalOcean**: Affordable VPS option
-- **Render**: Modern cloud platform with free tier
-
-For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)
-
-### Requirements to Deploy
-- Python 3.8+
-- Java Development Kit (JDK 8+)
-- A compatible hosting platform
-- PostgreSQL or MySQL (for production)
-
-## Installation
+## Installation & Setup
 
 ### Prerequisites
-- Python 3.8 or higher
-- Java Development Kit (JDK) 8 or higher
+- Python 3.8+
+- Java Development Kit (JDK 8+)
 - pip (Python package manager)
 
-### Setup Instructions
+### Quick Start
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd java-mastery-platform
+   git clone https://github.com/faizahmad-khan/java-tutorial.git
+   cd java-tutorial
    ```
 
 2. **Create a virtual environment**
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   python3 -m venv venv
+   source venv/bin/activate
    ```
 
 3. **Install dependencies**
    ```bash
-   pip install -r requirements.txt
+   pip3 install -r requirements.txt
    ```
 
 4. **Run the application**
    ```bash
-   python app.py
+   python3 app.py
    ```
 
 5. **Access the platform**
-   Open your browser and navigate to `http://localhost:5000`
+   Open your browser and go to **[http://localhost:8000](http://localhost:8000)**
 
-## Quick Start Guide
+## Getting Started
 
-### For Users (No Installation Required)
-1. Visit the live platform (once deployed)
-2. Create a free account by clicking "Sign Up"
-3. Start learning with the beginner course
+### For Students
+1. Visit http://localhost:8000
+2. Click "Sign Up" to create an account
+3. Browse and enroll in courses
 4. Track your progress on the dashboard
-5. Complete quizzes and assignments to earn badges
+5. Complete quizzes and assignments
 
-### For Developers (Local Setup)
-1. Clone this repository
-2. Create a Python virtual environment
-3. Install dependencies: `pip install -r requirements.txt`
-4. Run: `python app.py`
-5. Open `http://localhost:5000` in your browser
-
-### For Administrators
-1. Ensure you have admin privileges in the database
-2. Navigate to `/admin` after logging in
-3. Access the admin dashboard to:
-   - Create and manage courses
-   - Add lessons and multimedia content
-   - Create and grade quizzes
-   - Post assignments
-   - Monitor user progress
+### For Instructors/Admins
+1. Login to your admin account
+2. Navigate to `/admin` in the navbar
+3. Manage courses, lessons, quizzes, and assignments
+4. Monitor student progress and provide feedback
 
 ## Project Structure
 
 ```
-java-mastery-platform/
-│
-├── app.py                 # Main Flask application
-├── java_runner.py         # Secure Java execution environment
-├── requirements.txt       # Python dependencies
-├── DEPLOYMENT.md          # Deployment guide
-├── static/                # Static assets
-│   ├── css/              # Stylesheets
-│   ├── js/               # JavaScript files
-│   ├── images/           # Image assets
-│   └── videos/           # Video tutorials
-├── templates/            # HTML templates
-│   ├── base.html         # Base template
-│   ├── index.html        # Home page
-│   ├── login.html        # Login page
-│   ├── register.html     # Registration page
-│   ├── profile.html      # User profile
-│   ├── dashboard.html    # Learning dashboard
-│   ├── forum.html        # Discussion forum
-│   └── admin.html        # Admin panel
-└── LECTURE/              # Original Java lecture files
-    ├── class1.java       # Basic arithmetic
-    ├── class2.java       # Conditional logic
-    ├── class3.java       # Prime number check
-    ├── class4.java       # Array operations
-    ├── class5.java       # Array sum
-    ├── class6.java       # Nested loops
-    ├── class7.java       # String manipulation
-    └── class8.java       # Methods
+java-tutorial/
+├── app.py                      # Main Flask application
+├── java_runner.py              # Java execution environment
+├── requirements.txt            # Python dependencies
+├── templates/                  # HTML templates
+│   ├── admin/                  # Admin panel templates
+│   ├── index.html              # Home page
+│   ├── login.html              # Login page
+│   ├── register.html           # Registration
+│   ├── dashboard.html          # Student dashboard
+│   ├── forum.html              # Discussion forum
+│   └── base.html               # Base template
+├── static/                     # Static assets
+│   ├── styles.css              # Stylesheets
+│   ├── script.js               # JavaScript
+│   └── dark-theme.css          # Dark theme
+└── LECTURE/                    # Java tutorial files
+    ├── class1.java to class8.java
+    └── hello.java
 ```
 
-## Database Schema
+## Core Functionality
 
-The application uses SQLAlchemy ORM with the following models:
-
-- **User**: User accounts and authentication
-- **Course**: Learning paths (beginner, intermediate, advanced)
-- **Lesson**: Individual lessons within courses
-- **Progress**: User progress tracking
-- **Achievement**: Badges and accomplishments
-- **Quiz**: Assessment questions
-- **Assignment**: Coding assignments
-- **ForumPost**: Discussion forum posts
-
-## API Endpoints
-
-### Authentication
-- `POST /login` - User login
-- `POST /register` - User registration
-- `GET /logout` - User logout
+### User Management
+- User registration and login
+- Profile management
+- Role-based access control (Student, Instructor, Admin)
 
 ### Learning Content
-- `GET /` - Home page with courses
-- `GET /dashboard` - Learning analytics dashboard
-- `GET /forum` - Discussion forum
-- `GET /admin` - Admin panel
+- Create and manage courses
+- Add lessons with multimedia
+- Create quizzes with questions
+- Post assignments with deadlines
+- Track student progress
 
-### Progress Tracking
-- `GET /api/progress` - Get user progress
-- `POST /api/progress` - Update user progress
-- `POST /api/run_code` - Execute Java code
-- `POST /api/quiz/submit` - Submit quiz answers
+### Interactive Features
+- Real-time Java code execution
+- Code editor with syntax highlighting
+- Progress dashboards
+- Discussion forums
 
-### Content Management
-- `GET /api/courses` - Get all courses
-- `POST /api/courses` - Create new course
-- `GET /api/lessons` - Get all lessons
-- `POST /api/lessons` - Create new lesson
-- `GET /api/quizzes` - Get all quizzes
-- `POST /api/quizzes` - Create new quiz
+## Security
 
-## Security Features
+- Password hashing with bcrypt
+- Secure session management
+- Protected admin routes
+- Input validation and sanitization
+- Sandboxed Java code execution
 
-- **Input Sanitization**: All user inputs are validated and sanitized
-- **Secure Code Execution**: Java code runs in a sandboxed environment
-- **Session Management**: Secure session handling with Flask-Login
-- **Password Security**: Bcrypt for password hashing
-- **SQL Injection Prevention**: SQLAlchemy ORM prevents SQL injection
+## Deployment
 
-## Development Guidelines
+For production deployment, see [DEPLOYMENT.md](DEPLOYMENT.md)
 
-### Code Style
-- Follow PEP 8 for Python code
-- Use consistent naming conventions
-- Write comprehensive docstrings
-- Include unit tests for critical functionality
+Supported platforms:
+- Heroku
+- AWS Elastic Beanstalk
+- Google Cloud Platform
+- Azure App Service
+- DigitalOcean
+- Render
 
-### Frontend Best Practices
-- Mobile-first responsive design
-- Semantic HTML structure
-- Accessible UI components
-- Performance-optimized assets
+## Troubleshooting
 
-## Testing
+**Port already in use?**
+```bash
+killall python3
+python3 app.py
+```
 
-The platform includes comprehensive testing for:
-- User authentication and authorization
-- Code execution safety
-- Progress tracking accuracy
-- Database operations
-- API endpoint functionality
+**Database errors?**
+The database is created automatically. To reset:
+```bash
+rm instance/javamastery.db
+python3 app.py
+```
 
-## Performance Optimization
-
-- Database query optimization with proper indexing
-- Asset minification and compression
-- Efficient caching strategies
-- Asynchronous operations for long-running tasks
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support, please contact [support-email] or create an issue in the repository.
-
-## Acknowledgments
-
-- Original Java lecture files provided by faizahmad-khan
-- Ace Editor for the code editor component
-- Chart.js for data visualization
-- Flask community for the web framework
+**Import errors?**
+Install all dependencies:
+```bash
+pip3 install -r requirements.txt
+```
 
 ---
 
-**Note**: This platform was developed based on the Java tutorial files in the LECTURE directory, expanding them into a comprehensive learning management system with interactive features, progress tracking, and social learning capabilities.
+**Version:** 1.0.0 | **Last Updated:** December 2025
