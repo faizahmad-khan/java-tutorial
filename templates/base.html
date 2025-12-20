@@ -21,6 +21,9 @@
                     <li><a href="{{ url_for('forum') }}">Forum</a></li>
                     {% if current_user.is_authenticated %}
                         <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        {% if current_user.is_admin() %}
+                            <li><a href="{{ url_for('admin_dashboard') }}" style="color: #ff6b6b; font-weight: bold;">Admin</a></li>
+                        {% endif %}
                         <li><a href="{{ url_for('profile') }}">Profile</a></li>
                         <li><a href="{{ url_for('logout') }}">Logout</a></li>
                     {% else %}

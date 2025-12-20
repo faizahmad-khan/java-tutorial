@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>Admin Dashboard</h1>
+        <p>Manage all courses, lessons, quizzes, and assignments</p>
+    </div>
+
+    <!-- Courses Section -->
+    <div class="admin-section">
+        <div class="section-header">
+            <h2>Courses</h2>
+            <a href="{{ url_for('add_course') }}" class="btn btn-primary">+ Add Course</a>
+        </div>
+        {% if courses %}
+        <div class="content-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Level</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                    <tr>
+                        <td>{{ course.title }}</td>
+                        <td><span class="badge badge-info">{{ course.level }}</span></td>
+                        <td>{{ course.category }}</td>
+                        <td><span class="badge badge-{{ 'success' if course.status == 'approved' else 'warning' }}">{{ course.status }}</span></td>
+                        <td>{{ course.date_created.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_course', course_id=course.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <form method="POST" action="{{ url_for('delete_course', course_id=course.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                            <a href="{{ url_for('add_lesson', course_id=course.id) }}" class="btn btn-sm btn-success">+ Lesson</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty-message">No courses yet. <a href="{{ url_for('add_course') }}">Create one now</a></p>
+        {% endif %}
+    </div>
+
+    <!-- Lessons Section -->
+    <div class="admin-section">
+        <div class="section-header">
+            <h2>Lessons</h2>
+        </div>
+        {% if lessons %}
+        <div class="content-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Course</th>
+                        <th>Lesson #</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lesson in lessons %}
+                    <tr>
+                        <td>{{ lesson.title }}</td>
+                        <td><span class="badge badge-info">{{ lesson.lesson_type }}</span></td>
+                        <td>{{ lesson.course.title }}</td>
+                        <td>{{ lesson.lesson_number }}</td>
+                        <td><span class="badge badge-{{ 'success' if lesson.status == 'approved' else 'warning' }}">{{ lesson.status }}</span></td>
+                        <td>
+                            <a href="{{ url_for('edit_lesson', lesson_id=lesson.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <form method="POST" action="{{ url_for('delete_lesson', lesson_id=lesson.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                            <a href="{{ url_for('add_quiz', lesson_id=lesson.id) }}" class="btn btn-sm btn-success">+ Quiz</a>
+                            <a href="{{ url_for('add_assignment', lesson_id=lesson.id) }}" class="btn btn-sm btn-success">+ Assignment</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty-message">No lessons yet. Create a course first.</p>
+        {% endif %}
+    </div>
+
+    <!-- Quizzes Section -->
+    <div class="admin-section">
+        <div class="section-header">
+            <h2>Quizzes</h2>
+        </div>
+        {% if quizzes %}
+        <div class="content-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Lesson</th>
+                        <th>Points</th>
+                        <th>Time Limit</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quiz in quizzes %}
+                    <tr>
+                        <td>{{ quiz.title }}</td>
+                        <td>{{ quiz.lesson.title }}</td>
+                        <td>{{ quiz.points }}</td>
+                        <td>{{ quiz.time_limit }} sec</td>
+                        <td><span class="badge badge-{{ 'success' if quiz.status == 'active' else 'danger' }}">{{ quiz.status }}</span></td>
+                        <td>
+                            <a href="{{ url_for('edit_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <form method="POST" action="{{ url_for('delete_quiz', quiz_id=quiz.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty-message">No quizzes yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Assignments Section -->
+    <div class="admin-section">
+        <div class="section-header">
+            <h2>Assignments</h2>
+        </div>
+        {% if assignments %}
+        <div class="content-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Lesson</th>
+                        <th>Type</th>
+                        <th>Due Date</th>
+                        <th>Max Score</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assignment in assignments %}
+                    <tr>
+                        <td>{{ assignment.title }}</td>
+                        <td>{{ assignment.lesson.title }}</td>
+                        <td><span class="badge badge-info">{{ assignment.assignment_type }}</span></td>
+                        <td>{{ assignment.due_date.strftime('%Y-%m-%d %H:%M') if assignment.due_date else 'N/A' }}</td>
+                        <td>{{ assignment.max_score }}</td>
+                        <td><span class="badge badge-{{ 'success' if assignment.status == 'active' else 'danger' }}">{{ assignment.status }}</span></td>
+                        <td>
+                            <a href="{{ url_for('edit_assignment', assignment_id=assignment.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                            <form method="POST" action="{{ url_for('delete_assignment', assignment_id=assignment.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty-message">No assignments yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.admin-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.admin-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.admin-header h1 {
+    font-size: 2.5em;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.admin-header p {
+    font-size: 1.1em;
+    color: #666;
+}
+
+.admin-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+.section-header h2 {
+    font-size: 1.8em;
+    color: #333;
+    margin: 0;
+}
+
+.content-table {
+    overflow-x: auto;
+}
+
+.content-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+}
+
+.content-table table thead {
+    background-color: #f8f9fa;
+}
+
+.content-table table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.content-table table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.content-table table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.badge-info {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.badge-success {
+    background-color: #e8f5e9;
+    color: #388e3c;
+}
+
+.badge-warning {
+    background-color: #fff3e0;
+    color: #f57c00;
+}
+
+.badge-danger {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    margin-right: 5px;
+}
+
+.btn-primary {
+    background-color: #1976d2;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #1565c0;
+}
+
+.btn-warning {
+    background-color: #f57c00;
+    color: white;
+}
+
+.btn-warning:hover {
+    background-color: #e65100;
+}
+
+.btn-danger {
+    background-color: #d32f2f;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c62828;
+}
+
+.btn-success {
+    background-color: #388e3c;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #2e7d32;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85em;
+}
+
+.empty-message {
+    text-align: center;
+    color: #999;
+    padding: 30px;
+    font-size: 1.1em;
+}
+
+.empty-message a {
+    color: #1976d2;
+    text-decoration: none;
+}
+
+.empty-message a:hover {
+    text-decoration: underline;
+}
+</style>
+{% endblock %}

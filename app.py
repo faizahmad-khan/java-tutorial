@@ -9,6 +9,15 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationE
 from datetime import datetime, timedelta
 from functools import wraps
 import os
+
+# Admin required decorator
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin():
+            return redirect(url_for('login')) # Or an unauthorized page
+        return f(*args, **kwargs)
+    return decorated_function
 import secrets
 import re
 from java_runner import JavaRunner
@@ -198,6 +207,49 @@ class Assignment(db.Model):
 
 class AssignmentSubmission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
+# Forms for Admin to Add/Edit Content
+class CourseForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(min=5, max=100)])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    level = StringField('Level', validators=[DataRequired()])
+    category = StringField('Category', validators=[DataRequired()])
+    submit = SubmitField('Add Course')
+
+class LessonForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(min=5, max=100)])
+    content = TextAreaField('Content', validators=[DataRequired()])
+    lesson_type = StringField('Lesson Type', validators=[DataRequired()])
+    course_id = StringField('Course ID', validators=[DataRequired()]) # This will be a select field in the template
+    lesson_number = StringField('Lesson Number', validators=[DataRequired()])
+    multimedia_url = StringField('Multimedia URL')
+    duration = StringField('Duration (minutes)')
+    submit = SubmitField('Add Lesson')
+
+class QuizForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(min=5, max=200)])
+    lesson_id = StringField('Lesson ID', validators=[DataRequired()]) # Select field in template
+    question = TextAreaField('Question', validators=[DataRequired()])
+    option_a = StringField('Option A', validators=[DataRequired()])
+    option_b = StringField('Option B', validators=[DataRequired()])
+    option_c = StringField('Option C', validators=[DataRequired()])
+    option_d = StringField('Option D', validators=[DataRequired()])
+    correct_answer = StringField('Correct Answer (A, B, C, or D)', validators=[DataRequired(), Length(min=1, max=1)])
+    points = StringField('Points')
+    time_limit = StringField('Time Limit (seconds)')
+    submit = SubmitField('Add Quiz')
+
+class AssignmentForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(min=5, max=200)])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    course_id = StringField('Course ID', validators=[DataRequired()]) # Select field in template
+    lesson_id = StringField('Lesson ID', validators=[DataRequired()]) # Select field in template
+    assignment_type = StringField('Assignment Type', validators=[DataRequired()])
+    due_date = StringField('Due Date (YYYY-MM-DD HH:MM:SS)')
+    max_score = StringField('Max Score')
+    submit = SubmitField('Add Assignment')
+
+
     assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     code_submission = db.Column(db.Text)  # Student's code submission
@@ -2215,5 +2267,241 @@ with app.app_context():
     db.create_all()
     init_sample_data()
 
-if __name__ == '__main__':
+
+# Admin Dashboard Route
+@app.route('/admin')
+@login_required
+@admin_required
+def admin_dashboard():
+    courses = Course.query.all()
+    lessons = Lesson.query.all()
+    quizzes = Quiz.query.all()
+    assignments = Assignment.query.all()
+    return render_template('admin/dashboard.html', courses=courses, lessons=lessons, quizzes=quizzes, assignments=assignments)
+
+# Course Management
+@app.route('/admin/add_course', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_course():
+    form = CourseForm()
+    if form.validate_on_submit():
+        course = Course(
+            title=form.title.data,
+            description=form.description.data,
+            level=form.level.data,
+            category=form.category.data,
+            instructor=current_user
+        )
+        db.session.add(course)
+        db.session.commit()
+        return redirect(url_for('admin_dashboard'))
+    return render_template('admin/add_course.html', form=form)
+
+@app.route('/admin/edit_course/<int:course_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_course(course_id):
+    course = Course.query.get_or_404(course_id)
+    form = CourseForm()
+    if form.validate_on_submit():
+        course.title = form.title.data
+        course.description = form.description.data
+        course.level = form.level.data
+        course.category = form.category.data
+        db.session.commit()
+        return redirect(url_for('admin_dashboard'))
+    elif request.method == 'GET':
+        form.title.data = course.title
+        form.description.data = course.description
+        form.level.data = course.level
+        form.category.data = course.category
+    return render_template('admin/edit_course.html', form=form, course=course)
+
+@app.route('/admin/delete_course/<int:course_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_course(course_id):
+    course = Course.query.get_or_404(course_id)
+    db.session.delete(course)
+    db.session.commit()
+    return redirect(url_for('admin_dashboard'))
+
+# Lesson Management
+@app.route('/admin/add_lesson/<int:course_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_lesson(course_id):
+    course = Course.query.get_or_404(course_id)
+    form = LessonForm()
+    if form.validate_on_submit():
+        lesson = Lesson(
+            title=form.title.data,
+            content=form.content.data,
+            lesson_type=form.lesson_type.data,
+            course_id=course.id,
+            lesson_number=form.lesson_number.data,
+            multimedia_url=form.multimedia_url.data,
+            duration=form.duration.data
+        )
+        db.session.add(lesson)
+        db.session.commit()
+        return redirect(url_for('admin_dashboard'))
+    return render_template('admin/add_lesson.html', form=form, course=course)
+
+@app.route('/admin/edit_lesson/<int:lesson_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_lesson(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    form = LessonForm()
+    if form.validate_on_submit():
+        lesson.title = form.title.data
+        lesson.content = form.content.data
+        lesson.lesson_type = form.lesson_type.data
+        lesson.lesson_number = form.lesson_number.data
+        lesson.multimedia_url = form.multimedia_url.data
+        lesson.duration = form.duration.data
+        db.session.commit()
+        return redirect(url_for('admin_dashboard'))
+    elif request.method == 'GET':
+        form.title.data = lesson.title
+        form.content.data = lesson.content
+        form.lesson_type.data = lesson.lesson_type
+        form.lesson_number.data = lesson.lesson_number
+        form.multimedia_url.data = lesson.multimedia_url
+        form.duration.data = lesson.duration
+    return render_template('admin/edit_lesson.html', form=form, lesson=lesson)
+
+@app.route('/admin/delete_lesson/<int:lesson_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_lesson(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    db.session.delete(lesson)
+    db.session.commit()
+    return redirect(url_for('admin_dashboard'))
+
+# Quiz Management
+@app.route('/admin/add_quiz/<int:lesson_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_quiz(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    form = QuizForm()
+    if form.validate_on_submit():
+        quiz = Quiz(
+            title=form.title.data,
+            lesson_id=lesson.id,
+            question=form.question.data,
+            options={
+                'A': form.option_a.data,
+                'B': form.option_b.data,
+                'C': form.option_c.data,
+                'D': form.option_d.data
+            },
+            correct_answer=form.correct_answer.data,
+            points=form.points.data,
+            time_limit=form.time_limit.data
+        )
+        db.session.add(quiz)
+        db.session.commit()
+        return redirect(url_for('admin_dashboard'))
+    return render_template('admin/add_quiz.html', form=form, lesson=lesson)
+
+@app.route('/admin/edit_quiz/<int:quiz_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    form = QuizForm()
+    if form.validate_on_submit():
+        quiz.title = form.title.data
+        quiz.question = form.question.data
+        quiz.options = {
+            'A': form.option_a.data,
+            'B': form.option_b.data,
+            'C': form.option_c.data,
+            'D': form.option_d.data
+        }
+        quiz.correct_answer = form.correct_answer.data
+        quiz.points = form.points.data
+        quiz.time_limit = form.time_limit.data
+        db.session.commit()
+        return redirect(url_for('admin_dashboard'))
+    elif request.method == 'GET':
+        form.title.data = quiz.title
+        form.question.data = quiz.question
+        form.option_a.data = quiz.options['A']
+        form.option_b.data = quiz.options['B']
+        form.option_c.data = quiz.options['C']
+        form.option_d.data = quiz.options['D']
+        form.correct_answer.data = quiz.correct_answer
+        form.points.data = quiz.points
+        form.time_limit.data = quiz.time_limit
+    return render_template('admin/edit_quiz.html', form=form, quiz=quiz)
+
+@app.route('/admin/delete_quiz/<int:quiz_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    db.session.delete(quiz)
+    db.session.commit()
+    return redirect(url_for('admin_dashboard'))
+
+# Assignment Management
+@app.route('/admin/add_assignment/<int:lesson_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_assignment(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    form = AssignmentForm()
+    if form.validate_on_submit():
+        assignment = Assignment(
+            title=form.title.data,
+            description=form.description.data,
+            course_id=lesson.course_id,
+            lesson_id=lesson.id,
+            assignment_type=form.assignment_type.data,
+            due_date=datetime.strptime(form.due_date.data, '%Y-%m-%d %H:%M:%S') if form.due_date.data else None,
+            max_score=form.max_score.data
+        )
+        db.session.add(assignment)
+        db.session.commit()
+        return redirect(url_for('admin_dashboard'))
+    return render_template('admin/add_assignment.html', form=form, lesson=lesson)
+
+@app.route('/admin/edit_assignment/<int:assignment_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_assignment(assignment_id):
+    assignment = Assignment.query.get_or_404(assignment_id)
+    form = AssignmentForm()
+    if form.validate_on_submit():
+        assignment.title = form.title.data
+        assignment.description = form.description.data
+        assignment.assignment_type = form.assignment_type.data
+        assignment.due_date = datetime.strptime(form.due_date.data, '%Y-%m-%d %H:%M:%S') if form.due_date.data else None
+        assignment.max_score = form.max_score.data
+        db.session.commit()
+        return redirect(url_for('admin_dashboard'))
+    elif request.method == 'GET':
+        form.title.data = assignment.title
+        form.description.data = assignment.description
+        form.assignment_type.data = assignment.assignment_type
+        form.due_date.data = assignment.due_date.strftime('%Y-%m-%d %H:%M:%S') if assignment.due_date else ''
+        form.max_score.data = assignment.max_score
+    return render_template('admin/edit_assignment.html', form=form, assignment=assignment)
+
+@app.route('/admin/delete_assignment/<int:assignment_id>', methods=['POST'])
+@login_required
+@admin_required
+def delete_assignment(assignment_id):
+    assignment = Assignment.query.get_or_404(assignment_id)
+    db.session.delete(assignment)
+    db.session.commit()
+    return redirect(url_for('admin_dashboard'))
+
+
     app.run(debug=True)
