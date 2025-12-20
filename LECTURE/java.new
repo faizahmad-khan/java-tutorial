@@ -1,0 +1,58 @@
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfRect;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.objdetect.CascadeClassifier;
+
+public class ImageRecognition {
+    public static void main(String[] args) {
+        // Load the OpenCV native library
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+        // Adjust file paths according to project directory
+        String cascadePath = "resources/haarcascade_frontalface_alt.xml";
+        String inputImagePath = "resources/input.jpg";
+        String outputImagePath = "results/output.jpg";
+
+        // Load the Haar cascade XML file for face detection
+        CascadeClassifier faceDetector = new CascadeClassifier();
+        if (!faceDetector.load(cascadePath)) {
+            System.out.println("Error loading cascade classifier file.");
+            return;
+        }
+
+        // Read the input image
+        Mat image = Imgcodecs.imread(inputImagePath);
+        if (image.empty()) {
+            System.out.println("Error reading input image.");
+            return;
+        }
+
+        // Detect faces in the image
+        MatOfRect faceDetections = new MatOfRect();
+        faceDetector.detectMultiScale(image, faceDetections);
+
+        // Draw rectangles around each detected face
+        for (Rect rect : faceDetections.toArray()) {
+            Imgproc.rectangle(
+                image,
+                new Point(rect.x, rect.y),
+                new Point(rect.x + rect.width, rect.y + rect.height),
+                new Scalar(0, 255, 0),
+                2
+            );
+        }
+
+        // Save the output image with rectangles drawn
+        boolean result = Imgcodecs.imwrite(outputImagePath, image);
+        if (result) {
+            System.out.println("Face(s) Detected and Output Image Saved in 'results/output.jpg'.");
+        } else {
+            System.out.println("Error saving output image.");
+        }
+    }
+}
