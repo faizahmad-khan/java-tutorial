@@ -42,6 +42,35 @@ A comprehensive Java learning platform that guides users from absolute beginner 
 - **Secure Java Runner**: Sandboxed Java code execution environment
 - **Process Management**: Safe execution with timeout and resource limits
 
+## Live Platform / Access
+
+### Local Development
+To run the Java Mastery Platform locally on your machine:
+
+```bash
+python app.py
+```
+Then access the platform at: **[http://localhost:5000](http://localhost:5000)**
+
+### Deployment Options
+The platform can be deployed to various hosting services:
+
+- **Heroku**: Free tier available for testing
+- **AWS (Elastic Beanstalk)**: Scalable cloud hosting
+- **Google Cloud Platform (App Engine)**: Container-based deployment
+- **Azure (App Service)**: Microsoft cloud platform
+- **PythonAnywhere**: Beginner-friendly Python hosting
+- **DigitalOcean**: Affordable VPS option
+- **Render**: Modern cloud platform with free tier
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)
+
+### Requirements to Deploy
+- Python 3.8+
+- Java Development Kit (JDK 8+)
+- A compatible hosting platform
+- PostgreSQL or MySQL (for production)
+
 ## Installation
 
 ### Prerequisites
@@ -74,9 +103,33 @@ A comprehensive Java learning platform that guides users from absolute beginner 
    ```
 
 5. **Access the platform**
-   Open your browser and navigate to `http://127.0.0.1:5000`
-   
-   Or click here to access the live application: [Java Mastery Platform](http://127.0.0.1:3000/index.html)
+   Open your browser and navigate to `http://localhost:5000`
+
+## Quick Start Guide
+
+### For Users (No Installation Required)
+1. Visit the live platform (once deployed)
+2. Create a free account by clicking "Sign Up"
+3. Start learning with the beginner course
+4. Track your progress on the dashboard
+5. Complete quizzes and assignments to earn badges
+
+### For Developers (Local Setup)
+1. Clone this repository
+2. Create a Python virtual environment
+3. Install dependencies: `pip install -r requirements.txt`
+4. Run: `python app.py`
+5. Open `http://localhost:5000` in your browser
+
+### For Administrators
+1. Ensure you have admin privileges in the database
+2. Navigate to `/admin` after logging in
+3. Access the admin dashboard to:
+   - Create and manage courses
+   - Add lessons and multimedia content
+   - Create and grade quizzes
+   - Post assignments
+   - Monitor user progress
 
 ## Project Structure
 
