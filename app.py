@@ -686,16 +686,16 @@ def test_login():
 @app.route('/logout')
 @login_required
 def logout():
-    # Mark the current session as inactive
-    current_session = UserSession.query.filter_by(
+    # Mark all sessions for this user as inactive
+    user_sessions = UserSession.query.filter_by(
         user_id=current_user.id,
-        session_token=session.get('session_token'),
         is_active=True
-    ).first()
+    ).all()
     
-    if current_session:
-        current_session.is_active = False
-        db.session.commit()
+    for user_session in user_sessions:
+        user_session.is_active = False
+    
+    db.session.commit()
     
     logout_user()
     session.clear()  # Clear session data
@@ -2517,4 +2517,4 @@ def admin_delete_assignment(assignment_id):
     return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=8000)
+    app.run(debug=True, host='127.0.0.1', port=8000, use_reloader=False)

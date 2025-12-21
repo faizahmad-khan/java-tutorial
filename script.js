@@ -126,20 +126,20 @@ function showHelpTopic(topicId) {
 // Function to toggle mobile menu
 function toggleMobileMenu() {
     const hamburger = document.querySelector('.hamburger');
-    const navMenu = document.querySelector('.nav-menu');
+    const navMenuElement = document.querySelector('.nav-menu');
     
     hamburger.classList.toggle('active');
-    navMenu.classList.toggle('active');
+    navMenuElement.classList.toggle('active');
 }
 
 // Close mobile menu when clicking outside
 document.addEventListener('click', function(event) {
     const hamburger = document.querySelector('.hamburger');
-    const navMenu = document.querySelector('.nav-menu');
+    const navMenuElement = document.querySelector('.nav-menu');
     
-    if (!hamburger.contains(event.target) && !navMenu.contains(event.target)) {
+    if (!hamburger.contains(event.target) && !navMenuElement.contains(event.target)) {
         hamburger.classList.remove('active');
-        navMenu.classList.remove('active');
+        navMenuElement.classList.remove('active');
     }
 });
 
@@ -536,6 +536,12 @@ function scrollToSection(sectionId) {
 
 // Function to load a specific course
 function loadCourse(courseLevel) {
+    // Check if user is authenticated
+    if (!isUserLoggedIn()) {
+        showLoginAlert();
+        return;
+    }
+    
     // Show the learning interface
     document.getElementById('learning-interface').style.display = 'block';
     
@@ -547,6 +553,20 @@ function loadCourse(courseLevel) {
     
     // Load the first lesson for the selected course
     loadLesson(1);
+}
+
+// Function to check if user is logged in
+function isUserLoggedIn() {
+    // Check if there's a user session by looking for login link in navbar
+    const loginLink = document.querySelector('a[href="/login"]');
+    // If login link exists, user is NOT logged in
+    return !loginLink;
+}
+
+// Function to show login alert and redirect
+function showLoginAlert() {
+    alert('Please log in to access courses.');
+    window.location.href = '/login';
 }
 
 // Helper function to get course title
