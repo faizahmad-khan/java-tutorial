@@ -10,14 +10,6 @@ from datetime import datetime, timedelta
 from functools import wraps
 import os
 
-# Admin required decorator
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_admin():
-            return redirect(url_for('login')) # Or an unauthorized page
-        return f(*args, **kwargs)
-    return decorated_function
 import secrets
 import re
 from java_runner import JavaRunner
@@ -110,6 +102,7 @@ class Lesson(db.Model):
     progress = db.relationship('Progress', backref='lesson', lazy=True, cascade='all, delete-orphan')
     quizzes = db.relationship('Quiz', backref='lesson', lazy=True, cascade='all, delete-orphan')
     assignments = db.relationship('Assignment', backref='lesson', lazy=True, cascade='all, delete-orphan')
+    notes = db.relationship('Note', backref='lesson', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f"Lesson('{self.title}', '{self.lesson_type}', '{self.status}')"
@@ -262,20 +255,88 @@ class AssignmentForm(FlaskForm):
     max_score = StringField('Max Score')
     submit = SubmitField('Add Assignment')
 
+class NoteForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired(), Length(min=5, max=100)])
+    content = TextAreaField('Content', validators=[DataRequired()])
+    lesson_id = StringField('Lesson ID', validators=[DataRequired()]) # Select field in template
+    submit = SubmitField('Add Note')
 
-    assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    code_submission = db.Column(db.Text)  # Student's code submission
-    text_submission = db.Column(db.Text)  # Text response if applicable
-    file_submission_path = db.Column(db.String(200))  # Path to uploaded file if applicable
-    score = db.Column(db.Float)  # Score given by instructor or auto-graded
-    feedback = db.Column(db.Text)  # Feedback from instructor
-    date_submitted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    date_graded = db.Column(db.DateTime) # When the assignment was graded
-    status = db.Column(db.String(20), default='submitted')  # submitted, graded, returned
+# Utility functions for security
+def generate_token():
+    """Generate a secure random token for password reset and other purposes"""
+    return secrets.token_urlsafe(32)
 
+def validate_password_strength(password):
+    """Validate password strength requirements"""
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long"
+    
+    if not re.search(r"[A-Z]", password):
+        return False, "Password must contain at least one uppercase letter"
+    
+    if not re.search(r"[a-z]", password):
+        return False, "Password must contain at least one lowercase letter"
+    
+    if not re.search(r"\d", password):
+        return False, "Password must contain at least one digit"
+    
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        return False, "Password must contain at least one special character"
+    
+    return True, "Password is strong"
+
+def send_reset_email(user):
+    """Send password reset email to user"""
+    token = generate_token()
+    expires_at = datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
+    
+    # Create password reset token record
+    reset_token = PasswordResetToken(
+        user_id=user.id,
+        token=token,
+        expires_at=expires_at
+    )
+    db.session.add(reset_token)
+    db.session.commit()
+    
+    # Create and send email
+    msg = Message(
+        subject='Password Reset Request',
+        recipients=[user.email],
+        body=f'''To reset your password, visit the following link:
+{url_for('reset_password', token=token, _external=True)}
+
+If you did not make this request then simply ignore this email and no changes will be made.
+'''
+    )
+    try:
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False
+
+def verify_reset_token(token):
+    """Verify the password reset token"""
+    reset_token = PasswordResetToken.query.filter_by(token=token).first()
+    
+    if not reset_token or reset_token.used or reset_token.expires_at < datetime.utcnow():
+        return None
+    
+    return reset_token.user
+
+
+# New model for lesson notes
+class Note(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'), nullable=False)
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_updated = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
     def __repr__(self):
-        return f"AssignmentSubmission(assignment_id={self.assignment_id}, user_id={self.user_id}, score={self.score})"
+        return f"Note('{self.title}', lesson_id={self.lesson_id})"
 
 # New model for course enrollment
 class Enrollment(db.Model):
@@ -367,128 +428,56 @@ class Notification(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(200), nullable=False)
     message = db.Column(db.Text, nullable=False)
-    notification_type = db.Column(db.String(20), default='info')  # info, warning, success, error
+    notification_type = db.Column(db.String(20), default='info') # info, warning, success, error
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def __repr__(self):
         return f"Notification(user_id={self.user_id}, type='{self.notification_type}', read={self.is_read})"
+
+# Forum models
+class ForumCategory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"ForumCategory('{self.name}')"
+
+class ForumThread(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('forum_category.id'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    is_pinned = db.Column(db.Boolean, default=False)
+    is_locked = db.Column(db.Boolean, default=False)
     
-    # Utility functions for security
-    def generate_token():
-        """Generate a secure random token for password reset and other purposes"""
-        return secrets.token_urlsafe(32)
+    # Relationships
+    user = db.relationship('User', backref='forum_threads')
+    category = db.relationship('ForumCategory', backref='threads')
+    replies = db.relationship('ForumReply', backref='thread', lazy=True, cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f"ForumThread('{self.title}')"
+
+class ForumReply(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    thread_id = db.Column(db.Integer, db.ForeignKey('forum_thread.id'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     
-    def validate_password_strength(password):
-        """Validate password strength requirements"""
-        if len(password) < 8:
-            return False, "Password must be at least 8 characters long"
-        
-        if not re.search(r"[A-Z]", password):
-            return False, "Password must contain at least one uppercase letter"
-        
-        if not re.search(r"[a-z]", password):
-            return False, "Password must contain at least one lowercase letter"
-        
-        if not re.search(r"\d", password):
-            return False, "Password must contain at least one digit"
-        
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
-            return False, "Password must contain at least one special character"
-        
-        return True, "Password is strong"
-    
-    def send_reset_email(user):
-        """Send password reset email to user"""
-        token = generate_token()
-        expires_at = datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
-        
-        # Create password reset token record
-        reset_token = PasswordResetToken(
-            user_id=user.id,
-            token=token,
-            expires_at=expires_at
-        )
-        db.session.add(reset_token)
-        db.session.commit()
-        
-        # Create and send email
-        msg = Message(
-            subject='Password Reset Request',
-            recipients=[user.email],
-            body=f'''To reset your password, visit the following link:
-    {url_for('reset_password', token=token, _external=True)}
-    
-    If you did not make this request then simply ignore this email and no changes will be made.
-    '''
-        )
-        try:
-            mail.send(msg)
-            return True
-        except Exception as e:
-            print(f"Error sending email: {e}")
-            return False
-    
-    def verify_reset_token(token):
-        """Verify the password reset token"""
-        reset_token = PasswordResetToken.query.filter_by(token=token).first()
-        
-        if not reset_token or reset_token.used or reset_token.expires_at < datetime.utcnow():
-            return None
-        
-        return reset_token.user
-    
-    # Password reset routes
-    @app.route('/reset_password_request', methods=['GET', 'POST'])
-    def reset_password_request():
-        """Request password reset"""
-        if request.method == 'POST':
-            data = request.get_json()
-            email = data.get('email')
-            
-            user = User.query.filter_by(email=email).first()
-            if user:
-                # Send reset email
-                if send_reset_email(user):
-                    return jsonify({'success': True, 'message': 'Password reset email sent'})
-                else:
-                    return jsonify({'success': False, 'message': 'Failed to send reset email'})
-            else:
-                # To prevent email enumeration, return success even if email doesn't exist
-                return jsonify({'success': True, 'message': 'Password reset email sent'})
-        
-        return render_template('reset_password_request.html')
-    
-    @app.route('/reset_password/<token>', methods=['GET', 'POST'])
-    def reset_password(token):
-        """Reset password using token"""
-        user = verify_reset_token(token)
-        if not user:
-            return jsonify({'success': False, 'message': 'Invalid or expired token'}), 400
-        
-        if request.method == 'POST':
-            data = request.get_json()
-            new_password = data.get('password')
-            
-            # Validate password strength
-            is_valid, message = validate_password_strength(new_password)
-            if not is_valid:
-                return jsonify({'success': False, 'message': message}), 400
-            
-            # Hash the new password
-            hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
-            user.password_hash = hashed_password
-            
-            # Mark the reset token as used
-            reset_token = PasswordResetToken.query.filter_by(token=token).first()
-            reset_token.used = True
-            
-            db.session.commit()
-            
-            return jsonify({'success': True, 'message': 'Password reset successfully'})
-        
-        return render_template('reset_password.html', token=token)
-    
+    # Relationships
+    user = db.relationship('User', backref='forum_replies')
+
+    def __repr__(self):
+        return f"ForumReply(thread_id={self.thread_id}, user_id={self.user_id})"
+
 # Multi-factor authentication setup
 def generate_totp_secret():
     """Generate a secret for TOTP-based 2FA"""
@@ -702,15 +691,6 @@ def logout():
     return redirect(url_for('home'))
 
 # Role-based access control decorators
-def admin_required(f):
-    """Decorator to require admin role"""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_admin():
-            return jsonify({'success': False, 'message': 'Admin access required'}), 403
-        return f(*args, **kwargs)
-    return decorated_function
-
 def instructor_required(f):
     """Decorator to require instructor or admin role"""
     @wraps(f)
@@ -720,6 +700,7 @@ def instructor_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 def student_required(f):
     """Decorator to require student role"""
     @wraps(f)
@@ -728,6 +709,68 @@ def student_required(f):
             return jsonify({'success': False, 'message': 'Student access required'}), 403
         return f(*args, **kwargs)
     return decorated_function
+
+# Define the admin_required decorator
+def admin_required(f):
+    """Decorator to require admin role"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin():
+            return jsonify({'success': False, 'message': 'Admin access required'}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Password reset functionality
+@app.route('/reset_password_request', methods=['GET', 'POST'])
+def reset_password_request():
+    if request.method == 'POST':
+        data = request.get_json()
+        email = data.get('email', '').strip()
+        
+        if not email:
+            return jsonify({'success': False, 'message': 'Email is required'})
+        
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            # Don't reveal if email exists or not for security
+            return jsonify({'success': True, 'message': 'If your email exists in our system, you will receive a password reset link'})
+        
+        # Send reset email
+        if send_reset_email(user):
+            return jsonify({'success': True, 'message': 'If your email exists in our system, you will receive a password reset link'})
+        else:
+            return jsonify({'success': False, 'message': 'Error sending reset email. Please try again later.'})
+    
+    return render_template('reset_password_request.html')
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    user = verify_reset_token(token)
+    if not user:
+        return render_template('reset_password.html', error="Invalid or expired reset token")
+    
+    if request.method == 'POST':
+        data = request.get_json()
+        password = data.get('password', '')
+        
+        # Validate password strength
+        is_strong, message = validate_password_strength(password)
+        if not is_strong:
+            return jsonify({'success': False, 'message': message})
+        
+        # Hash the new password
+        user.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        
+        # Mark token as used
+        reset_token = PasswordResetToken.query.filter_by(token=token).first()
+        if reset_token:
+            reset_token.used = True
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Your password has been reset successfully'})
+    
+    return render_template('reset_password.html')
 
 # Update the admin route with proper access control
 @app.route('/admin')
@@ -923,10 +966,22 @@ def update_enrollment_status(course_id, user_id):
         db.session.commit()
 
 # Quiz management
-@app.route('/api/quizzes', methods=['POST'])
+@app.route('/api/quizzes', methods=['GET', 'POST'])
 @login_required
-def create_quiz():
-    """Create a new quiz"""
+def quizzes_api():
+    """Get all quizzes (GET) or create a new quiz (POST)"""
+    if request.method == 'GET':
+        quizzes = Quiz.query.all()
+        quizzes_data = [{
+            'id': q.id,
+            'question': q.question,
+            'lesson_title': q.lesson.title if q.lesson else 'Unknown',
+            'status': 'approved',
+            'date_created': q.date_created.isoformat() if hasattr(q, 'date_created') else ''
+        } for q in quizzes]
+        return jsonify({'quizzes': quizzes_data})
+    
+    # POST method - Create a new quiz
     if not (current_user.is_instructor() or current_user.is_admin()):
         return jsonify({'success': False, 'message': 'Instructor or admin access required'}), 403
     
@@ -1041,10 +1096,23 @@ def delete_quiz(quiz_id):
     return jsonify({'success': True, 'message': 'Quiz deleted successfully'})
 
 # Assignment management
-@app.route('/api/assignments', methods=['POST'])
+@app.route('/api/assignments', methods=['GET', 'POST'])
 @login_required
-def create_assignment():
-    """Create a new assignment"""
+def assignments_api():
+    """Get all assignments (GET) or create a new assignment (POST)"""
+    if request.method == 'GET':
+        assignments = Assignment.query.all()
+        assignments_data = [{
+            'id': a.id,
+            'title': a.title,
+            'course_title': a.course.title if a.course else 'Unknown',
+            'assignment_type': a.assignment_type or 'homework',
+            'status': 'approved',
+            'date_created': a.date_created.isoformat() if hasattr(a, 'date_created') else ''
+        } for a in assignments]
+        return jsonify({'assignments': assignments_data})
+    
+    # POST method - Create a new assignment
     if not (current_user.is_instructor() or current_user.is_admin()):
         return jsonify({'success': False, 'message': 'Instructor or admin access required'}), 403
     
@@ -1365,37 +1433,37 @@ def content_approval():
         ).all()
     
     request_list = []
-    for request in approval_requests:
+    for req in approval_requests:
         # Get content details
         content_title = "Unknown"
-        if request.content_type == 'course':
-            course = Course.query.get(request.content_id)
+        if req.content_type == 'course':
+            course = Course.query.get(req.content_id)
             content_title = course.title if course else "Unknown Course"
-        elif request.content_type == 'lesson':
-            lesson = Lesson.query.get(request.content_id)
+        elif req.content_type == 'lesson':
+            lesson = Lesson.query.get(req.content_id)
             content_title = lesson.title if lesson else "Unknown Lesson"
-        elif request.content_type == 'assignment':
-            assignment = Assignment.query.get(request.content_id)
+        elif req.content_type == 'assignment':
+            assignment = Assignment.query.get(req.content_id)
             content_title = assignment.title if assignment else "Unknown Assignment"
-        elif request.content_type == 'quiz':
-            quiz = Quiz.query.get(request.content_id)
+        elif req.content_type == 'quiz':
+            quiz = Quiz.query.get(req.content_id)
             content_title = quiz.title if quiz else "Unknown Quiz"
         
         # Get user who submitted
-        submitter = User.query.get(request.submitted_by)
+        submitter = User.query.get(req.submitted_by)
         
         request_data = {
-            'id': request.id,
-            'content_type': request.content_type,
-            'content_id': request.content_id,
+            'id': req.id,
+            'content_type': req.content_type,
+            'content_id': req.content_id,
             'content_title': content_title,
-            'submitted_by': request.submitted_by,
+            'submitted_by': req.submitted_by,
             'submitter_name': submitter.username if submitter else 'Unknown',
-            'status': request.status,
-            'submission_notes': request.submission_notes,
-            'approval_notes': request.approval_notes,
-            'date_submitted': request.date_submitted.isoformat(),
-            'date_approved': request.date_approved.isoformat() if request.date_approved else None
+            'status': req.status,
+            'submission_notes': req.submission_notes,
+            'approval_notes': req.approval_notes,
+            'date_submitted': req.date_submitted.isoformat(),
+            'date_approved': req.date_approved.isoformat() if req.date_approved else None
         }
         request_list.append(request_data)
     
@@ -1519,6 +1587,21 @@ def search_content():
     return jsonify({'results': results})
 
 # Content categorization
+@app.route('/api/users', methods=['GET'])
+@login_required
+@admin_required
+def get_users():
+    """Get all users"""
+    users = User.query.all()
+    users_data = [{
+        'id': u.id,
+        'username': u.username,
+        'email': u.email,
+        'role': u.role,
+        'date_created': u.date_created.isoformat() if u.date_created else ''
+    } for u in users]
+    return jsonify({'users': users_data})
+
 @app.route('/api/categories', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -1584,10 +1667,24 @@ def assign_course_category(course_id):
     return jsonify({'success': True, 'message': 'Category assigned successfully'})
 
 # Enhanced course creation with instructor assignment
-@app.route('/api/courses', methods=['POST'])
+@app.route('/api/courses', methods=['GET', 'POST'])
 @login_required
-def create_course():
-    """Create a new course (instructors can create their own courses)"""
+def courses_api():
+    """Get all courses (GET) or create a new course (POST)"""
+    if request.method == 'GET':
+        courses = Course.query.all()
+        courses_data = [{
+            'id': c.id,
+            'title': c.title,
+            'level': c.level,
+            'instructor_name': c.instructor.username if c.instructor else 'Unknown',
+            'status': c.status,
+            'lesson_count': len(c.lessons),
+            'date_created': c.date_created.isoformat()
+        } for c in courses]
+        return jsonify({'courses': courses_data})
+    
+    # POST method - Create a new course (instructors can create their own courses)
     if not (current_user.is_instructor() or current_user.is_admin()):
         return jsonify({'success': False, 'message': 'Instructor or admin access required'}), 403
     
@@ -1596,7 +1693,6 @@ def create_course():
     description = data.get('description')
     level = data.get('level')
     category = data.get('category', 'General')
-    
     if not title or not description or not level:
         return jsonify({'success': False, 'message': 'Missing required fields'}), 400
     
@@ -1673,10 +1769,23 @@ def delete_course(course_id):
     return jsonify({'success': True, 'message': 'Course deleted successfully'})
 
 # Lesson management
-@app.route('/api/lessons', methods=['POST'])
+@app.route('/api/lessons', methods=['GET', 'POST'])
 @login_required
-def create_lesson():
-    """Create a new lesson"""
+def lessons_api():
+    """Get all lessons (GET) or create a new lesson (POST)"""
+    if request.method == 'GET':
+        lessons = Lesson.query.all()
+        lessons_data = [{
+            'id': l.id,
+            'title': l.title,
+            'course_title': l.course.title if l.course else 'Unknown',
+            'lesson_type': l.lesson_type,
+            'status': l.status,
+            'date_created': l.date_created.isoformat()
+        } for l in lessons]
+        return jsonify({'lessons': lessons_data})
+    
+    # POST method - Create a new lesson
     if not (current_user.is_instructor() or current_user.is_admin()):
         return jsonify({'success': False, 'message': 'Instructor or admin access required'}), 403
     
@@ -1773,8 +1882,111 @@ def delete_lesson(lesson_id):
     
     db.session.delete(lesson)
     db.session.commit()
-    
     return jsonify({'success': True, 'message': 'Lesson deleted successfully'})
+
+# Note management
+@app.route('/api/notes', methods=['POST'])
+@login_required
+def create_note():
+    """Create a new note"""
+    if not (current_user.is_instructor() or current_user.is_admin()):
+        return jsonify({'success': False, 'message': 'Instructor or admin access required'}), 403
+    
+    data = request.get_json()
+    title = data.get('title')
+    content = data.get('content')
+    lesson_id = data.get('lesson_id')
+    
+    if not title or not content or not lesson_id:
+        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    
+    # Verify lesson exists and user has permission
+    lesson = Lesson.query.get(lesson_id)
+    if not lesson:
+        return jsonify({'success': False, 'message': 'Lesson not found'}), 404
+    
+    course = Course.query.get(lesson.course_id)
+    if course.instructor_id != current_user.id and not current_user.is_admin():
+        return jsonify({'success': False, 'message': 'Insufficient permissions'}), 403
+    
+    note = Note(
+        title=title,
+        content=content,
+        lesson_id=lesson_id
+    )
+    db.session.add(note)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Note created successfully', 'note_id': note.id})
+
+@app.route('/api/notes/<int:note_id>', methods=['PUT'])
+@login_required
+def update_note(note_id):
+    """Update note information"""
+    note = Note.query.get_or_404(note_id)
+    lesson = Lesson.query.get(note.lesson_id)
+    course = Course.query.get(lesson.course_id)
+    
+    # Check permissions
+    if course.instructor_id != current_user.id and not current_user.is_admin():
+        return jsonify({'success': False, 'message': 'Insufficient permissions'}), 403
+    
+    data = request.get_json()
+    
+    # Update allowed fields
+    if 'title' in data:
+        note.title = data['title']
+    if 'content' in data:
+        note.content = data['content']
+    
+    note.date_updated = datetime.utcnow()
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Note updated successfully'})
+
+@app.route('/api/notes/<int:note_id>', methods=['DELETE'])
+@login_required
+def delete_note(note_id):
+    """Delete a note"""
+    note = Note.query.get_or_404(note_id)
+    lesson = Lesson.query.get(note.lesson_id)
+    course = Course.query.get(lesson.course_id)
+    
+    # Check permissions
+    if course.instructor_id != current_user.id and not current_user.is_admin():
+        return jsonify({'success': False, 'message': 'Insufficient permissions'}), 403
+    
+    db.session.delete(note)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Note deleted successfully'})
+
+@app.route('/api/notes/lesson/<int:lesson_id>')
+@login_required
+def get_notes_by_lesson(lesson_id):
+    """Get all notes for a specific lesson"""
+    lesson = Lesson.query.get_or_404(lesson_id)
+    
+    # Check if user is enrolled in the course or is an instructor/admin
+    if not (current_user.is_admin() or current_user.is_instructor() or
+            Enrollment.query.filter_by(user_id=current_user.id, course_id=lesson.course_id).first()):
+        return jsonify({'success': False, 'message': 'Insufficient permissions'}), 403
+    
+    notes = Note.query.filter_by(lesson_id=lesson_id).all()
+    
+    notes_list = []
+    for note in notes:
+        notes_list.append({
+            'id': note.id,
+            'title': note.title,
+            'content': note.content,
+            'lesson_id': note.lesson_id,
+            'date_created': note.date_created.isoformat(),
+            'date_updated': note.date_updated.isoformat()
+        })
+    
+    return jsonify({'notes': notes_list})
+
 
 @app.route('/profile')
 @login_required
@@ -2089,6 +2301,187 @@ def submit_assignment():
     
     return jsonify({'success': True, 'message': 'Assignment submitted successfully'})
 
+# Forum API routes
+@app.route('/api/forum/categories', methods=['GET', 'POST'])
+@login_required
+def forum_categories():
+    """Get all forum categories or create a new one"""
+    if request.method == 'GET':
+        categories = ForumCategory.query.all()
+        categories_data = [{
+            'id': cat.id,
+            'name': cat.name,
+            'description': cat.description,
+            'thread_count': len(cat.threads)
+        } for cat in categories]
+        return jsonify({'categories': categories_data})
+    
+    if not (current_user.is_admin() or current_user.is_instructor()):
+        return jsonify({'success': False, 'message': 'Admin or instructor access required'}), 403
+    
+    data = request.get_json()
+    name = data.get('name')
+    description = data.get('description', '')
+    
+    if not name:
+        return jsonify({'success': False, 'message': 'Category name is required'}), 400
+    
+    # Check if category already exists
+    existing_category = ForumCategory.query.filter_by(name=name).first()
+    if existing_category:
+        return jsonify({'success': False, 'message': 'Category already exists'}), 400
+    
+    category = ForumCategory(name=name, description=description)
+    db.session.add(category)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Category created successfully', 'category_id': category.id})
+
+@app.route('/api/forum/threads', methods=['GET', 'POST'])
+@login_required
+def forum_threads():
+    """Get all forum threads or create a new one"""
+    if request.method == 'GET':
+        category_id = request.args.get('category_id')
+        threads_query = ForumThread.query
+        
+        if category_id:
+            threads_query = threads_query.filter_by(category_id=category_id)
+        
+        threads = threads_query.order_by(ForumThread.is_pinned.desc(), ForumThread.updated_at.desc()).all()
+        
+        threads_data = []
+        for thread in threads:
+            reply_count = len(thread.replies)
+            latest_reply = max(thread.replies, key=lambda r: r.created_at) if thread.replies else None
+            
+            thread_data = {
+                'id': thread.id,
+                'title': thread.title,
+                'content': thread.content[:100] + '...' if len(thread.content) > 100 else thread.content,
+                'username': thread.user.username,
+                'category_name': thread.category.name,
+                'created_at': thread.created_at.isoformat(),
+                'updated_at': thread.updated_at.isoformat(),
+                'reply_count': reply_count,
+                'latest_reply_at': latest_reply.created_at.isoformat() if latest_reply else None,
+                'is_pinned': thread.is_pinned,
+                'is_locked': thread.is_locked
+            }
+            threads_data.append(thread_data)
+        
+        return jsonify({'threads': threads_data})
+    
+    # POST method - Create a new thread
+    data = request.get_json()
+    title = data.get('title')
+    content = data.get('content')
+    category_id = data.get('category_id')
+    
+    if not title or not content or not category_id:
+        return jsonify({'success': False, 'message': 'Title, content, and category are required'}), 400
+    
+    # Verify category exists
+    category = ForumCategory.query.get(category_id)
+    if not category:
+        return jsonify({'success': False, 'message': 'Category not found'}), 404
+    
+    thread = ForumThread(
+        title=title,
+        content=content,
+        user_id=current_user.id,
+        category_id=category_id
+    )
+    db.session.add(thread)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Thread created successfully', 'thread_id': thread.id})
+
+@app.route('/api/forum/threads/<int:thread_id>', methods=['GET', 'PUT', 'DELETE'])
+@login_required
+def forum_thread(thread_id):
+    """Get, update, or delete a specific forum thread"""
+    thread = ForumThread.query.get_or_404(thread_id)
+    
+    if request.method == 'GET':
+        # Get thread with all replies
+        replies = ForumReply.query.filter_by(thread_id=thread_id).order_by(ForumReply.created_at.asc()).all()
+        
+        thread_data = {
+            'id': thread.id,
+            'title': thread.title,
+            'content': thread.content,
+            'username': thread.user.username,
+            'category_name': thread.category.name,
+            'created_at': thread.created_at.isoformat(),
+            'updated_at': thread.updated_at.isoformat(),
+            'is_pinned': thread.is_pinned,
+            'is_locked': thread.is_locked,
+            'replies': [{
+                'id': reply.id,
+                'content': reply.content,
+                'username': reply.user.username,
+                'created_at': reply.created_at.isoformat(),
+                'updated_at': reply.updated_at.isoformat()
+            } for reply in replies]
+        }
+        
+        return jsonify({'thread': thread_data})
+    
+    # Check if user can modify thread (thread owner, admin, or instructor)
+    if not (current_user.id == thread.user_id or current_user.is_admin() or current_user.is_instructor()):
+        return jsonify({'success': False, 'message': 'Insufficient permissions'}), 403
+    
+    if request.method == 'PUT':
+        data = request.get_json()
+        
+        if 'title' in data:
+            thread.title = data['title']
+        if 'content' in data:
+            thread.content = data['content']
+        if 'is_pinned' in data and current_user.is_admin():
+            thread.is_pinned = data['is_pinned']
+        if 'is_locked' in data:
+            thread.is_locked = data['is_locked']
+        
+        thread.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Thread updated successfully'})
+    
+    if request.method == 'DELETE':
+        db.session.delete(thread)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Thread deleted successfully'})
+
+@app.route('/api/forum/replies', methods=['POST'])
+@login_required
+def forum_replies():
+    """Create a new reply to a thread"""
+    data = request.get_json()
+    content = data.get('content')
+    thread_id = data.get('thread_id')
+    
+    if not content or not thread_id:
+        return jsonify({'success': False, 'message': 'Content and thread ID are required'}), 400
+    
+    # Check if thread exists and is not locked
+    thread = ForumThread.query.get_or_404(thread_id)
+    if thread.is_locked and not current_user.is_admin():
+        return jsonify({'success': False, 'message': 'This thread is locked and cannot be replied to'}), 400
+    
+    reply = ForumReply(
+        content=content,
+        user_id=current_user.id,
+        thread_id=thread_id
+    )
+    db.session.add(reply)
+    thread.updated_at = datetime.utcnow()  # Update thread's last activity time
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Reply added successfully', 'reply_id': reply.id})
+
 # Sample data initialization
 def init_sample_data():
    """Initialize sample courses, lessons, quizzes and assignments if database is empty"""
@@ -2185,7 +2578,7 @@ def init_sample_data():
            lesson = Lesson(
                title=lesson_data["title"],
                content=lesson_data["content"],
-               course_id=oop_course.id,
+               course_id=oop_course.id,  # Fixed to use correct variable
                lesson_number=i
            )
            db.session.add(lesson)
@@ -2210,7 +2603,7 @@ def init_sample_data():
            lesson = Lesson(
                title=lesson_data["title"],
                content=lesson_data["content"],
-               course_id=advanced_course.id,
+               course_id=advanced_course.id,  # Fixed to use correct variable
                lesson_number=i
            )
            db.session.add(lesson)
@@ -2392,6 +2785,49 @@ def edit_lesson(lesson_id):
 def admin_delete_lesson(lesson_id):
     lesson = Lesson.query.get_or_404(lesson_id)
     db.session.delete(lesson)
+    db.session.commit()
+    return redirect(url_for('admin_dashboard'))
+
+# Note Management
+@app.route('/admin/add_note/<int:lesson_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_note(lesson_id):
+    lesson = Lesson.query.get_or_404(lesson_id)
+    form = NoteForm()
+    if form.validate_on_submit():
+        note = Note(
+            title=form.title.data,
+            content=form.content.data,
+            lesson_id=lesson.id
+        )
+        db.session.add(note)
+        db.session.commit()
+        return redirect(url_for('admin_dashboard'))
+    return render_template('admin/add_note.html', form=form, lesson=lesson)
+
+@app.route('/admin/edit_note/<int:note_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_note(note_id):
+    note = Note.query.get_or_404(note_id)
+    form = NoteForm()
+    if form.validate_on_submit():
+        note.title = form.title.data
+        note.content = form.content.data
+        db.session.commit()
+        return redirect(url_for('admin_dashboard'))
+    elif request.method == 'GET':
+        form.title.data = note.title
+        form.content.data = note.content
+    return render_template('admin/edit_note.html', form=form, note=note)
+
+@app.route('/admin/delete_note/<int:note_id>', methods=['POST'])
+@login_required
+@admin_required
+def admin_delete_note(note_id):
+    note = Note.query.get_or_404(note_id)
+    db.session.delete(note)
     db.session.commit()
     return redirect(url_for('admin_dashboard'))
 
