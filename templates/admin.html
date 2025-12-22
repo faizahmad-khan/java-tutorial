@@ -383,6 +383,20 @@
 
 {% block scripts %}
 <script>
+// Helper function to escape HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
+        '`': '&#96;'
+    };
+    return String(text).replace(/[&<>"'`]/g, m => map[m]);
+}
+
 // Admin panel functionality
 document.addEventListener('DOMContentLoaded', function() {
     loadCourses();
@@ -412,17 +426,7 @@ async function loadCourses() {
         
         data.courses.forEach(course => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${course.title}</td>
-                <td>${course.level}</td>
-                <td>${course.instructor_name || 'Unknown'}</td>
-                <td><span class="status-badge ${course.status}">${course.status}</span></td>
-                <td>${course.lesson_count || 0}</td>
-                <td>
-                    <button class="btn-small btn-edit" onclick="editCourse(${course.id})">Edit</button>
-                    <button class="btn-small btn-delete" onclick="deleteCourse(${course.id})">Delete</button>
-                </td>
-            `;
+            row.innerHTML = '<td>' + escapeHtml(course.title || '') + '</td><td>' + escapeHtml(course.level || '') + '</td><td>' + escapeHtml(course.instructor_name || 'Unknown') + '</td><td><span class="status-badge ' + course.status + '">' + course.status + '</span></td><td>' + (course.lesson_count || 0) + '</td><td><button class="btn-small btn-edit" onclick="editCourse(' + course.id + ')">Edit</button><button class="btn-small btn-delete" onclick="deleteCourse(' + course.id + ')">Delete</button></td>';
             coursesList.appendChild(row);
         });
     } catch (error) {
@@ -441,16 +445,7 @@ async function loadLessons() {
         
         data.lessons.forEach(lesson => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${lesson.title}</td>
-                <td>${lesson.course_title}</td>
-                <td>${lesson.lesson_type}</td>
-                <td><span class="status-badge ${lesson.status}">${lesson.status}</span></td>
-                <td>
-                    <button class="btn-small btn-edit" onclick="editLesson(${lesson.id})">Edit</button>
-                    <button class="btn-small btn-delete" onclick="deleteLesson(${lesson.id})">Delete</button>
-                </td>
-            `;
+            row.innerHTML = '<td>' + escapeHtml(lesson.title || '') + '</td><td>' + escapeHtml(lesson.course_title || '') + '</td><td>' + escapeHtml(lesson.lesson_type || '') + '</td><td><span class="status-badge ' + lesson.status + '">' + lesson.status + '</span></td><td><button class="btn-small btn-edit" onclick="editLesson(' + lesson.id + ')">Edit</button><button class="btn-small btn-delete" onclick="deleteLesson(' + lesson.id + ')">Delete</button></td>';
             lessonsList.appendChild(row);
         });
     } catch (error) {
@@ -469,15 +464,8 @@ async function loadQuizzes() {
         
         data.quizzes.forEach(quiz => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${quiz.question.substring(0, 50)}...</td>
-                <td>${quiz.lesson_title}</td>
-                <td><span class="status-badge ${quiz.status}">${quiz.status}</span></td>
-                <td>
-                    <button class="btn-small btn-edit" onclick="editQuiz(${quiz.id})">Edit</button>
-                    <button class="btn-small btn-delete" onclick="deleteQuiz(${quiz.id})">Delete</button>
-                </td>
-            `;
+            const questionText = escapeHtml((quiz.question || '').substring(0, 50)) + '...';
+            row.innerHTML = '<td>' + questionText + '</td><td>' + escapeHtml(quiz.lesson_title || '') + '</td><td><span class="status-badge ' + quiz.status + '">' + quiz.status + '</span></td><td><button class="btn-small btn-edit" onclick="editQuiz(' + quiz.id + ')">Edit</button><button class="btn-small btn-delete" onclick="deleteQuiz(' + quiz.id + ')">Delete</button></td>';
             quizzesList.appendChild(row);
         });
     } catch (error) {
@@ -496,16 +484,7 @@ async function loadAssignments() {
         
         data.assignments.forEach(assignment => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${assignment.title}</td>
-                <td>${assignment.course_title}</td>
-                <td>${assignment.assignment_type}</td>
-                <td><span class="status-badge ${assignment.status}">${assignment.status}</span></td>
-                <td>
-                    <button class="btn-small btn-edit" onclick="editAssignment(${assignment.id})">Edit</button>
-                    <button class="btn-small btn-delete" onclick="deleteAssignment(${assignment.id})">Delete</button>
-                </td>
-            `;
+            row.innerHTML = '<td>' + escapeHtml(assignment.title || '') + '</td><td>' + escapeHtml(assignment.course_title || '') + '</td><td>' + escapeHtml(assignment.assignment_type || '') + '</td><td><span class="status-badge ' + assignment.status + '">' + assignment.status + '</span></td><td><button class="btn-small btn-edit" onclick="editAssignment(' + assignment.id + ')">Edit</button><button class="btn-small btn-delete" onclick="deleteAssignment(' + assignment.id + ')">Delete</button></td>';
             assignmentsList.appendChild(row);
         });
     } catch (error) {
@@ -524,16 +503,7 @@ async function loadUsers() {
         
         data.users.forEach(user => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${user.username}</td>
-                <td>${user.email}</td>
-                <td>${user.role}</td>
-                <td>${new Date(user.date_created).toLocaleDateString()}</td>
-                <td>
-                    <button class="btn-small btn-edit" onclick="editUser(${user.id})">Edit</button>
-                    <button class="btn-small btn-delete" onclick="deleteUser(${user.id})">Delete</button>
-                </td>
-            `;
+            row.innerHTML = '<td>' + escapeHtml(user.username || '') + '</td><td>' + escapeHtml(user.email || '') + '</td><td>' + escapeHtml(user.role || '') + '</td><td>' + new Date(user.date_created).toLocaleDateString() + '</td><td><button class="btn-small btn-edit" onclick="editUser(' + user.id + ')">Edit</button><button class="btn-small btn-delete" onclick="deleteUser(' + user.id + ')">Delete</button></td>';
             usersList.appendChild(row);
         });
     } catch (error) {
@@ -573,16 +543,7 @@ async function loadCategories() {
         
         data.categories.forEach(category => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${category.name}</td>
-                <td>${category.description}</td>
-                <td>${category.parent_name || 'None'}</td>
-                <td>${new Date(category.date_created).toLocaleDateString()}</td>
-                <td>
-                    <button class="btn-small btn-edit" onclick="editCategory(${category.id})">Edit</button>
-                    <button class="btn-small btn-delete" onclick="deleteCategory(${category.id})">Delete</button>
-                </td>
-            `;
+            row.innerHTML = '<td>' + escapeHtml(category.name || '') + '</td><td>' + escapeHtml(category.description || '') + '</td><td>' + escapeHtml(category.parent_name || 'None') + '</td><td>' + new Date(category.date_created).toLocaleDateString() + '</td><td><button class="btn-small btn-edit" onclick="editCategory(' + category.id + ')">Edit</button><button class="btn-small btn-delete" onclick="deleteCategory(' + category.id + ')">Delete</button></td>';
             categoriesList.appendChild(row);
         });
     } catch (error) {

@@ -36,14 +36,6 @@ body {
     overflow-x: hidden;
 }
 
-body {
-    font-family: 'Roboto', sans-serif;
-    line-height: 1.6;
-    color: var(--text-primary);
-    background: linear-gradient(135deg, var(--light-bg), #1a2436);
-    overflow-x: hidden;
-}
-
 .container {
     width: 90%;
     max-width: 1200px;
@@ -1801,11 +1793,11 @@ body {
     margin-top: 15px;
 }
 
-/* Dashboard Section */
-.dashboard-section {
+/* Dashboard Section - Duplicate - Removing */
+/* .dashboard-section {
     padding: 60px 0;
     background-color: rgb(69, 60, 239);
-}
+} */
 
 .dashboard-filters {
     display: flex;
@@ -2122,29 +2114,7 @@ footer {
 }
 
 /* Responsive Design */
-/* Animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+/* Animations - Duplicates removed */
 
 /* Auth Pages (Login, Register, Reset Password) */
 .auth-section {
