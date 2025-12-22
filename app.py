@@ -20,7 +20,15 @@ java_runner = JavaRunner()
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or secrets.token_hex(16)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///javamastery.db'
+# Use PostgreSQL in production, SQLite in development
+import os
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    # For production (PostgreSQL)
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL.replace("postgres://", "postgresql://")
+else:
+    # For development (SQLite)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///javamastery.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Configure session settings
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
@@ -2484,194 +2492,202 @@ def forum_replies():
 
 # Sample data initialization
 def init_sample_data():
-   """Initialize sample courses, lessons, quizzes and assignments if database is empty"""
-   if Course.query.count() == 0:
-       # Create a sample instructor
-       from flask_bcrypt import generate_password_hash
-       instructor = User(
-           username="instructor",
-           email="instructor@example.com",
-           password_hash=generate_password_hash("password").decode('utf-8'),
-           role="instructor",
-           is_verified=True
-       )
-       db.session.add(instructor)
-       db.session.commit()
+    """Initialize sample courses, lessons, quizzes and assignments if database is empty"""
+    try:
+        if Course.query.count() == 0:
+            # Create a sample instructor
+            from flask_bcrypt import generate_password_hash
+            instructor = User(
+                username="instructor",
+                email="instructor@example.com",
+                password_hash=generate_password_hash("password").decode('utf-8'),
+                role="instructor",
+                is_verified=True
+            )
+            db.session.add(instructor)
+            db.session.commit()
 
-       # Create sample courses
-       fundamentals_course = Course(
-           title="Java Fundamentals",
-           description="Learn the basics of Java programming: variables, data types, operators, and basic I/O.",
-           level="beginner",
-           instructor_id=instructor.id
-       )
-       oop_course = Course(
-           title="Object-Oriented Programming",
-           description="Dive deep into OOP concepts: classes, objects, inheritance, polymorphism, and encapsulation.",
-           level="intermediate",
-           instructor_id=instructor.id
-       )
-       advanced_course = Course(
-           title="Advanced Java Concepts",
-           description="Explore advanced topics: collections, streams, multithreading, and design patterns.",
-           level="advanced",
-           instructor_id=instructor.id
-       )
-       
-       db.session.add_all([fundamentals_course, oop_course, advanced_course])
-       db.session.commit()
-       
-       # Create sample lessons for fundamentals course
-       lessons_fundamentals = [
-           {
-               "title": "Introduction to Variables",
-               "content": "A variable is a container that holds a value which can change during program execution. In Java, variables must be declared with a specific data type before they can be used."
-           },
-           {
-               "title": "Basic Arithmetic Operations",
-               "content": "Learn how to perform basic mathematical operations in Java: addition, subtraction, multiplication, and division."
-           },
-           {
-               "title": "Conditional Statements",
-               "content": "Conditional statements allow your program to make decisions. The 'if-else' statement executes different blocks of code based on whether a condition is true or false."
-           },
-           {
-               "title": "Loops and Iteration",
-               "content": "Loops allow you to execute a block of code repeatedly. The 'for' loop is commonly used when you know how many times you want to repeat the code."
-           },
-           {
-               "title": "Arrays and Collections",
-               "content": "Arrays are used to store multiple values in a single variable, instead of declaring separate variables for each value."
-           }
-       ]
-       
-       for i, lesson_data in enumerate(lessons_fundamentals, 1):
-           lesson = Lesson(
-               title=lesson_data["title"],
-               content=lesson_data["content"],
-               course_id=fundamentals_course.id,
-               lesson_number=i
-           )
-           db.session.add(lesson)
-       
-       # Create sample lessons for OOP course
-       lessons_oop = [
-           {
-               "title": "Classes and Objects",
-               "content": "In object-oriented programming, a class is a blueprint for creating objects. An object is an instance of a class."
-           },
-           {
-               "title": "Inheritance",
-               "content": "Inheritance allows us to define a class that inherits all the methods and properties from another class."
-           },
-           {
-               "title": "Encapsulation",
-               "content": "Encapsulation is one of the fundamental concepts in object-oriented programming (OOP). It describes the idea of wrapping data and the methods that work on data within one unit."
-           },
-           {
-               "title": "Polymorphism",
-               "content": "Polymorphism means 'many forms', and it occurs when we have many classes that are related to each other through inheritance."
-           }
-       ]
-       
-       for i, lesson_data in enumerate(lessons_oop, 1):
-           lesson = Lesson(
-               title=lesson_data["title"],
-               content=lesson_data["content"],
-               course_id=oop_course.id,  # Fixed to use correct variable
-               lesson_number=i
-           )
-           db.session.add(lesson)
-       
-       # Create sample lessons for advanced course
-       lessons_advanced = [
-           {
-               "title": "Collections Framework",
-               "content": "The Java Collections Framework provides a well-designed set of interfaces and classes for storing and manipulating groups of data."
-           },
-           {
-               "title": "Streams API",
-               "content": "The Stream API introduced in Java 8 provides a declarative way to process collections of data."
-           },
-           {
-               "title": "Multithreading",
-               "content": "Multithreading is a Java feature that allows concurrent execution of two or more parts of a program for maximum utilization of CPU."
-           }
-       ]
-       
-       for i, lesson_data in enumerate(lessons_advanced, 1):
-           lesson = Lesson(
-               title=lesson_data["title"],
-               content=lesson_data["content"],
-               course_id=advanced_course.id,  # Fixed to use correct variable
-               lesson_number=i
-           )
-           db.session.add(lesson)
-       
-       # Create sample quizzes
-       quiz1 = Quiz(
-           title="Java Variable Declaration",
-           lesson_id=1,
-           question="Which of the following is the correct way to declare an integer variable in Java?",
-           options=["var number = 5;", "int number = 5;", "integer number = 5;", "number int = 5;"],
-           correct_answer="B"
-       )
-       
-       quiz2 = Quiz(
-           title="Java Data Types",
-           lesson_id=1,
-           question="What is the purpose of the 'double' data type in Java?",
-           options=["To store whole numbers", "To store decimal numbers", "To store text", "To store boolean values"],
-           correct_answer="B"
-       )
-       
-       quiz3 = Quiz(
-           title="Conditional Expressions",
-           lesson_id=3,
-           question="What is the result of the expression: 10 > 5 ?",
-           options=["true", "false", "10", "5"],
-           correct_answer="A"
-       )
-       
-       quiz4 = Quiz(
-           title="Java Comparison Operators",
-           lesson_id=3,
-           question="Which operator is used for equality comparison in Java?",
-           options=["=", "==", "!=", ">"],
-           correct_answer="B"
-       )
-       
-       # Create sample assignments
-       assignment1 = Assignment(
-           title="Variable Declaration Practice",
-           description="Create a Java program that declares and initializes variables of different data types (int, double, String, boolean). Print the values of these variables to the console.",
-           course_id=fundamentals_course.id,
-           lesson_id=1,
-           max_score=100
-       )
-       
-       assignment2 = Assignment(
-           title="Calculator Program",
-           description="Create a Java program that performs basic arithmetic operations (addition, subtraction, multiplication, division) on two numbers entered by the user.",
-           course_id=fundamentals_course.id,
-           lesson_id=2,
-           max_score=100
-       )
-       
-       assignment3 = Assignment(
-           title="Grade Determination Program",
-           description="Write a Java program that takes marks of three subjects as input and determines the grade based on the percentage.",
-           course_id=fundamentals_course.id,
-           lesson_id=3,
-           max_score=100
-       )
-       
-       db.session.add_all([quiz1, quiz2, quiz3, quiz4, assignment1, assignment2, assignment3])
-       db.session.commit()
+            # Create sample courses
+            fundamentals_course = Course(
+                title="Java Fundamentals",
+                description="Learn the basics of Java programming: variables, data types, operators, and basic I/O.",
+                level="beginner",
+                instructor_id=instructor.id
+            )
+            oop_course = Course(
+                title="Object-Oriented Programming",
+                description="Dive deep into OOP concepts: classes, objects, inheritance, polymorphism, and encapsulation.",
+                level="intermediate",
+                instructor_id=instructor.id
+            )
+            advanced_course = Course(
+                title="Advanced Java Concepts",
+                description="Explore advanced topics: collections, streams, multithreading, and design patterns.",
+                level="advanced",
+                instructor_id=instructor.id
+            )
+            
+            db.session.add_all([fundamentals_course, oop_course, advanced_course])
+            db.session.commit()
+            
+            # Create sample lessons for fundamentals course
+            lessons_fundamentals = [
+                {
+                    "title": "Introduction to Variables",
+                    "content": "A variable is a container that holds a value which can change during program execution. In Java, variables must be declared with a specific data type before they can be used."
+                },
+                {
+                    "title": "Basic Arithmetic Operations",
+                    "content": "Learn how to perform basic mathematical operations in Java: addition, subtraction, multiplication, and division."
+                },
+                {
+                    "title": "Conditional Statements",
+                    "content": "Conditional statements allow your program to make decisions. The 'if-else' statement executes different blocks of code based on whether a condition is true or false."
+                },
+                {
+                    "title": "Loops and Iteration",
+                    "content": "Loops allow you to execute a block of code repeatedly. The 'for' loop is commonly used when you know how many times you want to repeat the code."
+                },
+                {
+                    "title": "Arrays and Collections",
+                    "content": "Arrays are used to store multiple values in a single variable, instead of declaring separate variables for each value."
+                }
+            ]
+            
+            for i, lesson_data in enumerate(lessons_fundamentals, 1):
+                lesson = Lesson(
+                    title=lesson_data["title"],
+                    content=lesson_data["content"],
+                    course_id=fundamentals_course.id,
+                    lesson_number=i
+                )
+                db.session.add(lesson)
+            
+            # Create sample lessons for OOP course
+            lessons_oop = [
+                {
+                    "title": "Classes and Objects",
+                    "content": "In object-oriented programming, a class is a blueprint for creating objects. An object is an instance of a class."
+                },
+                {
+                    "title": "Inheritance",
+                    "content": "Inheritance allows us to define a class that inherits all the methods and properties from another class."
+                },
+                {
+                    "title": "Encapsulation",
+                    "content": "Encapsulation is one of the fundamental concepts in object-oriented programming (OOP). It describes the idea of wrapping data and the methods that work on data within one unit."
+                },
+                {
+                    "title": "Polymorphism",
+                    "content": "Polymorphism means 'many forms', and it occurs when we have many classes that are related to each other through inheritance."
+                }
+            ]
+            
+            for i, lesson_data in enumerate(lessons_oop, 1):
+                lesson = Lesson(
+                    title=lesson_data["title"],
+                    content=lesson_data["content"],
+                    course_id=oop_course.id,  # Fixed to use correct variable
+                    lesson_number=i
+                )
+                db.session.add(lesson)
+            
+            # Create sample lessons for advanced course
+            lessons_advanced = [
+                {
+                    "title": "Collections Framework",
+                    "content": "The Java Collections Framework provides a well-designed set of interfaces and classes for storing and manipulating groups of data."
+                },
+                {
+                    "title": "Streams API",
+                    "content": "The Stream API introduced in Java 8 provides a declarative way to process collections of data."
+                },
+                {
+                    "title": "Multithreading",
+                    "content": "Multithreading is a Java feature that allows concurrent execution of two or more parts of a program for maximum utilization of CPU."
+                }
+            ]
+            
+            for i, lesson_data in enumerate(lessons_advanced, 1):
+                lesson = Lesson(
+                    title=lesson_data["title"],
+                    content=lesson_data["content"],
+                    course_id=advanced_course.id,  # Fixed to use correct variable
+                    lesson_number=i
+                )
+                db.session.add(lesson)
+            
+            # Create sample quizzes
+            quiz1 = Quiz(
+                title="Java Variable Declaration",
+                lesson_id=1,
+                question="Which of the following is the correct way to declare an integer variable in Java?",
+                options=["var number = 5;", "int number = 5;", "integer number = 5;", "number int = 5;"],
+                correct_answer="B"
+            )
+            
+            quiz2 = Quiz(
+                title="Java Data Types",
+                lesson_id=1,
+                question="What is the purpose of the 'double' data type in Java?",
+                options=["To store whole numbers", "To store decimal numbers", "To store text", "To store boolean values"],
+                correct_answer="B"
+            )
+            
+            quiz3 = Quiz(
+                title="Conditional Expressions",
+                lesson_id=3,
+                question="What is the result of the expression: 10 > 5 ?",
+                options=["true", "false", "10", "5"],
+                correct_answer="A"
+            )
+            
+            quiz4 = Quiz(
+                title="Java Comparison Operators",
+                lesson_id=3,
+                question="Which operator is used for equality comparison in Java?",
+                options=["=", "==", "!=", ">"],
+                correct_answer="B"
+            )
+            
+            # Create sample assignments
+            assignment1 = Assignment(
+                title="Variable Declaration Practice",
+                description="Create a Java program that declares and initializes variables of different data types (int, double, String, boolean). Print the values of these variables to the console.",
+                course_id=fundamentals_course.id,
+                lesson_id=1,
+                max_score=100
+            )
+            
+            assignment2 = Assignment(
+                title="Calculator Program",
+                description="Create a Java program that performs basic arithmetic operations (addition, subtraction, multiplication, division) on two numbers entered by the user.",
+                course_id=fundamentals_course.id,
+                lesson_id=2,
+                max_score=100
+            )
+            
+            assignment3 = Assignment(
+                title="Grade Determination Program",
+                description="Write a Java program that takes marks of three subjects as input and determines the grade based on the percentage.",
+                course_id=fundamentals_course.id,
+                lesson_id=3,
+                max_score=100
+            )
+            
+            db.session.add_all([quiz1, quiz2, quiz3, quiz4, assignment1, assignment2, assignment3])
+            db.session.commit()
+    except Exception as e:
+        print(f"Error initializing sample data: {e}")
+        db.session.rollback()
 
 with app.app_context():
-    db.create_all()
-    init_sample_data()
+    try:
+        db.create_all()
+        init_sample_data()
+        print("Database initialized successfully!")
+    except Exception as e:
+        print(f"Error initializing database: {e}")
 
 
 # Admin Dashboard Route
