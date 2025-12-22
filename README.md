@@ -49,7 +49,12 @@ A comprehensive Java learning platform with interactive code execution, progress
    pip3 install -r requirements.txt
    ```
 
-4. **Run the application**
+4. **Initialize the database**
+   ```bash
+   python3 init_db.py
+   ```
+
+5. **Run the application**
    ```bash
    python3 app.py
    ```
@@ -128,6 +133,26 @@ java-tutorial/
 
 For production deployment, see [DEPLOYMENT.md](DEPLOYMENT.md)
 
+### Vercel Deployment with PostgreSQL
+
+To deploy this application with persistent database storage on Vercel:
+
+1. **Set up a PostgreSQL database** (recommended options):
+   - [Supabase](https://supabase.com/) (free tier available)
+   - [Neon](https://neon.tech/) (free tier available)
+   - [AWS RDS](https://aws.amazon.com/rds/)
+   - [Google Cloud SQL](https://cloud.google.com/sql)
+
+2. **Configure environment variables in Vercel**:
+   - `DATABASE_URL`: Your PostgreSQL connection string (format: postgresql://username:password@host:port/database_name)
+
+3. **Deploy to Vercel**:
+   - Connect your GitHub repository to Vercel
+   - The application will automatically use PostgreSQL in production and SQLite for local development
+
+### Local Development
+For local development, the application will continue to use SQLite as configured in the code.
+
 Supported platforms:
 - Heroku
 - AWS Elastic Beanstalk
@@ -135,6 +160,7 @@ Supported platforms:
 - Azure App Service
 - DigitalOcean
 - Render
+- Vercel (with PostgreSQL)
 
 ## Troubleshooting
 
