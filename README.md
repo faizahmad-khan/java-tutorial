@@ -4,7 +4,7 @@ A comprehensive Java learning platform with interactive code execution, progress
 
 ## 🚀 Quick Access
 
-**Access the platform here:** [http://localhost:8000](http://localhost:8000)
+**Access the platform here:** [https://java-tutorial-steel.vercel.app](https://java-tutorial-steel.vercel.app)
 
 ## Features
 
@@ -55,12 +55,12 @@ A comprehensive Java learning platform with interactive code execution, progress
    ```
 
 5. **Access the platform**
-   Open your browser and go to **[http://localhost:8000](http://localhost:8000)**
+   Open your browser and go to **[https://java-tutorial-steel.vercel.app](https://java-tutorial-steel.vercel.app)**
 
 ## Getting Started
 
 ### For Students
-1. Visit http://localhost:8000
+1. Visit https://java-tutorial-steel.vercel.app
 2. Click "Sign Up" to create an account
 3. Browse and enroll in courses
 4. Track your progress on the dashboard
