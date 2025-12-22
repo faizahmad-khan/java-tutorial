@@ -1,0 +1,41 @@
+{
+    "folders": [
+        {
+            "name": "Java Tutorial LMS",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/__pycache__": true,
+            "**/*.pyc": true,
+            "**/.git": true,
+            "**/.svn": true,
+            "**/.hg": true,
+            "**/CVS": true,
+            "**/.DS_Store": true
+        },
+        "python.defaultInterpreterPath": "./venv/bin/python",
+        "editor.rulers": [88],
+        "files.associations": {
+            "*.html": "html"
+        },
+        "emmet.includeLanguages": {
+            "javascript": "html"
+        },
+        "workbench.colorTheme": "Default Dark+",
+        "workbench.iconTheme": "vscode-icons"
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-python.python",
+            "ms-python.flake8",
+            "ms-python.pylint",
+            "ms-python.black-formatter",
+            "bradlc.vscode-tailwindcss",
+            "formulahendry.auto-rename-tag",
+            "esbenp.prettier-vscode",
+            "ms-vscode.vscode-json"
+        ]
+    }
+}
