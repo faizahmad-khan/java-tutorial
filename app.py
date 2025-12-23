@@ -8,9 +8,8 @@ from wtforms import StringField, PasswordField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length
 from datetime import datetime, timedelta
 from functools import wraps
+from werkzeug.middleware.proxy_fix import ProxyFix
 import os
-import logging
-
 import secrets
 import re
 from java_runner import JavaRunner
@@ -20,11 +19,10 @@ java_runner = JavaRunner()
 
 # Initialize Flask app
 app = Flask(__name__)
+
 # Ensure SECRET_KEY is set from environment - critical for Vercel deployments
 SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
-    # Log a warning if SECRET_KEY is not set (helpful for debugging Vercel issues)
-    logging.warning("SECRET_KEY not set in environment! This will cause session issues on Vercel.")
     # For production on Vercel, we should not fall back to a random key
     # Instead, we'll raise an error to make the issue clear
     if os.environ.get('VERCEL', False):
@@ -41,8 +39,14 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # For Vercel deployment, make sure session cookie is configured properly
-if os.environ.get('VERCEL', False):
+# Check for Vercel environment in multiple ways to ensure detection
+is_vercel = os.environ.get('VERCEL', False) or os.environ.get('VERCEL_ENV', False) or os.environ.get('NOW_REGION', False)
+
+if is_vercel:
     app.config['SESSION_COOKIE_SECURE'] = True  # Ensure HTTPS cookies on Vercel
+    app.config['PREFERRED_URL_SCHEME'] = 'https'
+    # Additional Vercel-specific configurations
+    app.config['TRAP_HTTP_EXCEPTIONS'] = True
 
 # Use PostgreSQL in production, SQLite in development
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -75,6 +79,41 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
+
+# Use PostgreSQL in production, SQLite in development
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    # For production (PostgreSQL)
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL.replace("postgres://", "postgresql://")
+else:
+    # For development (SQLite)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///javamastery.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Configure session settings
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+
+# Mail configuration for password reset and notifications
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT') or 587)
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() in ['true', 'on', '1']
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
+
+# Initialize mail extension
+mail = Mail(app)
+
+# Initialize extensions
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to access this page.'
+login_manager.login_message_category = 'info'
+
+# Apply ProxyFix middleware to handle Vercel's proxy headers
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # User loader for Flask-Login
 @login_manager.user_loader
