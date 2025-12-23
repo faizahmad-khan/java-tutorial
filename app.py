@@ -2505,6 +2505,16 @@ def init_sample_data():
                 is_verified=True
             )
             db.session.add(instructor)
+            
+            # Create a default admin user
+            admin = User(
+                username="admin",
+                email="admin@example.com",
+                password_hash=generate_password_hash("admin123").decode('utf-8'),
+                role="admin",
+                is_verified=True
+            )
+            db.session.add(admin)
             db.session.commit()
 
             # Create sample courses
