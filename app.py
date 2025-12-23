@@ -80,14 +80,17 @@ login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
 
-# Use PostgreSQL in production, SQLite in development
+# Use PostgreSQL (Supabase) for Vercel deployment
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
-    # For production (PostgreSQL)
+    # For production (PostgreSQL/Supabase)
+    # Replace postgres:// with postgresql:// for newer SQLAlchemy versions
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL.replace("postgres://", "postgresql://")
 else:
-    # For development (SQLite)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///javamastery.db'
+    # Fallback to PostgreSQL for development if DATABASE_URL is not set
+    # This is important for Vercel deployment - we don't want SQLite
+    raise ValueError("DATABASE_URL environment variable is required for Vercel deployment. Please set up a Supabase database and add the connection URL as an environment variable.")
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Configure session settings
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
