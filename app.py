@@ -49,7 +49,7 @@ if is_vercel:
     app.config['TRAP_HTTP_EXCEPTIONS'] = True
 
 # Use PostgreSQL in production, SQLite in development
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL') # Added check for POSTGRES_URL
 if DATABASE_URL:
     # For production (PostgreSQL)
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL.replace("postgres://", "postgresql://")
@@ -2764,8 +2764,25 @@ with app.app_context():
     except Exception as e:
         print(f"Error initializing database: {e}")
 
+# Database initialization route
+@app.route('/init_db')
+def initialize_database():
+    """Initialize the database with tables and sample data"""
+    try:
+        with app.app_context():
+            db.create_all()
+            init_sample_data()
+        return jsonify({
+            'success': True,
+            'message': 'Database initialized successfully with tables and sample data!'
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error initializing database: {str(e)}'
+        }), 500
 
-# Admin Dashboard Route
+ # Admin Dashboard Route
 @app.route('/admin')
 @login_required
 @admin_required
