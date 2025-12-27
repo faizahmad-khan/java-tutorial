@@ -48,26 +48,6 @@ if is_vercel:
     # Additional Vercel-specific configurations
     app.config['TRAP_HTTP_EXCEPTIONS'] = True
 
-# Use PostgreSQL in production, SQLite in development
-DATABASE_URL = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL') # Added check for POSTGRES_URL
-if DATABASE_URL:
-    # For production (PostgreSQL)
-    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL.replace("postgres://", "postgresql://")
-else:
-    # For development (SQLite)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///javamastery.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# Configure session settings
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
-
-# Mail configuration for password reset and notifications
-app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
-app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT') or 587)
-app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() in ['true', 'on', '1']
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
-
 # Initialize mail extension
 mail = Mail(app)
 
@@ -80,16 +60,14 @@ login_manager.login_view = 'login'
 login_manager.login_message = 'Please log in to access this page.'
 login_manager.login_message_category = 'info'
 
-# Use PostgreSQL (Supabase) for Vercel deployment
-DATABASE_URL = os.environ.get('DATABASE_URL')
+# Use PostgreSQL in production, SQLite in development
+DATABASE_URL = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')  # Added check for POSTGRES_URL
 if DATABASE_URL:
-    # For production (PostgreSQL/Supabase)
-    # Replace postgres:// with postgresql:// for newer SQLAlchemy versions
-    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL.replace("postgres://", "postgresql://")
+   # For production (PostgreSQL)
+   app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL.replace("postgres://", "postgresql://")
 else:
-    # Fallback to PostgreSQL for development if DATABASE_URL is not set
-    # This is important for Vercel deployment - we don't want SQLite
-    raise ValueError("DATABASE_URL environment variable is required for Vercel deployment. Please set up a Supabase database and add the connection URL as an environment variable.")
+   # For development (SQLite)
+   app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///javamastery.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Configure session settings
@@ -845,12 +823,6 @@ def reset_password(token):
     
     return render_template('reset_password.html')
 
-# Update the admin route with proper access control
-@app.route('/admin')
-@login_required
-@admin_required
-def admin():
-    return render_template('admin.html')
 
 # Enrollment management routes
 @app.route('/api/enrollments', methods=['GET', 'POST'])
@@ -2356,19 +2328,19 @@ def submit_assignment():
     ).first()
     
     if existing_submission:
-        # Update existing submission
-        existing_submission.code_submission = code_submission
-        existing_submission.text_submission = text_submission
-        existing_submission.date_submitted = datetime.utcnow()
+       # Update existing submission
+       existing_submission.submission_code = code_submission
+       existing_submission.submission_text = text_submission
+       existing_submission.date_submitted = datetime.utcnow()
     else:
-        # Create new submission
-        submission = AssignmentSubmission(
-            assignment_id=assignment_id,
-            user_id=current_user.id,
-            code_submission=code_submission,
-            text_submission=text_submission
-        )
-        db.session.add(submission)
+       # Create new submission
+       submission = AssignmentSubmission(
+           assignment_id=assignment_id,
+           user_id=current_user.id,
+           submission_code=code_submission,
+           submission_text=text_submission
+       )
+       db.session.add(submission)
     
     db.session.commit()
     
@@ -2782,16 +2754,16 @@ def initialize_database():
             'message': f'Error initializing database: {str(e)}'
         }), 500
 
- # Admin Dashboard Route
-@app.route('/admin')
+# Admin Dashboard Route
+@app.route('/admin/dashboard')
 @login_required
 @admin_required
 def admin_dashboard():
-    courses = Course.query.all()
-    lessons = Lesson.query.all()
-    quizzes = Quiz.query.all()
-    assignments = Assignment.query.all()
-    return render_template('admin/dashboard.html', courses=courses, lessons=lessons, quizzes=quizzes, assignments=assignments)
+   courses = Course.query.all()
+   lessons = Lesson.query.all()
+   quizzes = Quiz.query.all()
+   assignments = Assignment.query.all()
+   return render_template('admin/dashboard.html', courses=courses, lessons=lessons, quizzes=quizzes, assignments=assignments)
 
 # Course Management
 @app.route('/admin/add_course', methods=['GET', 'POST'])
