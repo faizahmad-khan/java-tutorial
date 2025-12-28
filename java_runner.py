@@ -13,6 +13,13 @@ class JavaRunner:
         self.timeout = timeout  # Timeout in seconds
         self.java_home = self._find_java_home()
         
+        # Check if running in a serverless environment
+        self.is_serverless = os.environ.get('VERCEL', False) or os.environ.get('SERVERLESS', False)
+        
+        # If in serverless environment, disable Java execution
+        if self.is_serverless:
+            self.java_home = None
+        
     def _find_java_home(self):
         """
         Find the Java installation directory.
@@ -55,12 +62,20 @@ class JavaRunner:
             dict: A dictionary containing the execution result
         """
         if not self.java_home:
-            return {
-                'success': False,
-                'output': '',
-                'error': 'Java is not installed or not found in the system',
-                'timeout': False
-            }
+            if self.is_serverless:
+                return {
+                    'success': False,
+                    'output': '',
+                    'error': 'Java execution is not available in serverless environment. Java compilation and execution is disabled in this deployment.',
+                    'timeout': False
+                }
+            else:
+                return {
+                    'success': False,
+                    'output': '',
+                    'error': 'Java is not installed or not found in the system',
+                    'timeout': False
+                }
         
         # Create a temporary directory for this execution
         with tempfile.TemporaryDirectory() as temp_dir:
