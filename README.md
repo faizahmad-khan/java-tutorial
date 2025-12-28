@@ -184,4 +184,4 @@ Feel free to submit issues and enhancement requests!
 
 ## License
 
-MIT
+MIT.
