@@ -552,5 +552,52 @@ def admin_dashboard():
     courses = Course.query.all()
     return render_template('admin/dashboard.html', courses=courses)
 
+@app.route('/create_admin')
+def create_admin():
+    # 1. SECURITY: Check for a secret setup key in the URL
+    # You will visit: /create_admin?key=YOUR_SETUP_KEY
+    setup_key = request.args.get('key')
+    expected_key = os.environ.get('SETUP_KEY')
+    
+    if not expected_key or setup_key != expected_key:
+        return jsonify({'success': False, 'message': 'Unauthorized: Invalid or missing setup key.'}), 401
+
+    # 2. Get secure credentials from Vercel Environment Variables
+    admin_user = os.environ.get('ADMIN_USERNAME')
+    admin_pass = os.environ.get('ADMIN_PASSWORD')
+    admin_email = os.environ.get('ADMIN_EMAIL')
+
+    if not admin_user or not admin_pass:
+        return jsonify({'success': False, 'message': 'Admin credentials not set in environment variables.'}), 500
+
+    try:
+        # 3. Create or Update the Admin
+        user = User.query.filter_by(username=admin_user).first()
+        hashed_pw = bcrypt.generate_password_hash(admin_pass).decode('utf-8')
+        
+        if user:
+            user.password_hash = hashed_pw
+            user.role = 'admin'
+            user.email = admin_email if admin_email else user.email
+            action = "updated"
+        else:
+            if not admin_email:
+                return jsonify({'success': False, 'message': 'Email required for new admin.'}), 400
+            user = User(
+                username=admin_user,
+                email=admin_email,
+                password_hash=hashed_pw,
+                role='admin',
+                is_verified=True
+            )
+            db.session.add(user)
+            action = "created"
+            
+        db.session.commit()
+        return jsonify({'success': True, 'message': f"Admin user '{admin_user}' {action} successfully."})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 if __name__ == '__main__':
     app.run(debug=True)
