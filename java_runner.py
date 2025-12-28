@@ -11,14 +11,15 @@ class JavaRunner:
     
     def __init__(self, timeout=5):
         self.timeout = timeout  # Timeout in seconds
-        self.java_home = self._find_java_home()
         
-        # Check if running in a serverless environment
+        # 1. Check if running in a serverless environment FIRST
         self.is_serverless = os.environ.get('VERCEL', False) or os.environ.get('SERVERLESS', False)
         
-        # If in serverless environment, disable Java execution
+        # 2. Only look for Java if we are NOT on Vercel
         if self.is_serverless:
             self.java_home = None
+        else:
+            self.java_home = self._find_java_home()
         
     def _find_java_home(self):
         """
@@ -54,28 +55,23 @@ class JavaRunner:
     def run_java_code(self, code):
         """
         Execute Java code in a secure environment and return the output.
-        
-        Args:
-            code (str): The Java code to execute
-            
-        Returns:
-            dict: A dictionary containing the execution result
         """
+        # Immediate exit if on Vercel
+        if self.is_serverless:
+            return {
+                'success': False,
+                'output': '',
+                'error': 'Java execution is not available in this online demo (Vercel). Please run locally for full features.',
+                'timeout': False
+            }
+
         if not self.java_home:
-            if self.is_serverless:
-                return {
-                    'success': False,
-                    'output': '',
-                    'error': 'Java execution is not available in serverless environment. Java compilation and execution is disabled in this deployment.',
-                    'timeout': False
-                }
-            else:
-                return {
-                    'success': False,
-                    'output': '',
-                    'error': 'Java is not installed or not found in the system',
-                    'timeout': False
-                }
+            return {
+                'success': False,
+                'output': '',
+                'error': 'Java is not installed or not found on this server.',
+                'timeout': False
+            }
         
         # Create a temporary directory for this execution
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -155,7 +151,6 @@ class JavaRunner:
     def _is_safe_code(self, code):
         """
         Basic check to ensure the code doesn't contain potentially harmful operations.
-        This is a very basic check - in a production environment, you'd want more robust validation.
         """
         unsafe_patterns = [
             'Runtime.getRuntime()',
@@ -178,24 +173,5 @@ class JavaRunner:
         
         return True
 
-# Example usage
 if __name__ == "__main__":
     runner = JavaRunner()
-    
-    # Test code
-    test_code = """
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-        int a = 10;
-        int b = 20;
-        System.out.println("Sum: " + (a + b));
-    }
-}
-"""
-    
-    result = runner.run_java_code(test_code)
-    print("Success:", result['success'])
-    print("Output:", result['output'])
-    if result['error']:
-        print("Error:", result['error'])
