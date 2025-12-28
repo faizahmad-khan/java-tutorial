@@ -2196,8 +2196,16 @@ def run_code():
     if not code:
         return jsonify({'success': False, 'output': '', 'error': 'No code provided'})
     
-    # Run the Java code using our JavaRunner
-    result = java_runner.run_java_code(code)
+    try:
+        # Run the Java code using our JavaRunner
+        result = java_runner.run_java_code(code)
+    except Exception as e:
+        # Handle any errors in Java execution
+        result = {
+            'success': False,
+            'output': '',
+            'error': f'Error executing Java code: {str(e)}'
+        }
     
     return jsonify(result)
 
@@ -2728,13 +2736,17 @@ def init_sample_data():
         print(f"Error initializing sample data: {e}")
         db.session.rollback()
 
-with app.app_context():
-    try:
-        db.create_all()
-        init_sample_data()
-        print("Database initialized successfully!")
-    except Exception as e:
-        print(f"Error initializing database: {e}")
+# Initialize database tables and sample data only when needed
+def initialize_database():
+    with app.app_context():
+        try:
+            db.create_all()
+            init_sample_data()
+            print("Database initialized successfully!")
+            return True
+        except Exception as e:
+            print(f"Error initializing database: {e}")
+            return False
 
 # Database initialization route
 @app.route('/init_db')
@@ -3034,3 +3046,19 @@ def admin_delete_assignment(assignment_id):
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=8000, use_reloader=False)
+
+# WSGI application entry point for Vercel
+application = app
+
+# For Vercel deployment, make sure the app object is available at the module level
+# Vercel will look for the 'app' object in this file
+# Only initialize database if not in Vercel environment
+if not os.environ.get('VERCEL'):
+    try:
+        with app.app_context():
+            db.create_all()
+            init_sample_data()
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+else:
+    print("Running in Vercel environment - skipping database initialization")
