@@ -6,3 +6,6 @@ Flask-Mail
 Flask-WTF
 psycopg2-binary
 gunicorn
+pyotp
+qrcode[pil]
+Werkzeug
