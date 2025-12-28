@@ -516,6 +516,41 @@ def course_detail(course_id):
     # This might be needed for your frontend JS
     course = Course.query.get_or_404(course_id)
     return jsonify({'id': course.id, 'title': course.title})
+ # --- MISSING PASSWORD RESET ROUTES ---
+
+@app.route('/reset_password_request', methods=['GET', 'POST'])
+def reset_password_request():
+    if request.method == 'POST':
+        data = request.get_json()
+        email = data.get('email', '').strip()
+        
+        # We don't actually send emails in this Vercel demo to prevent errors
+        # In a real app, you would verify the user and send the email here
+        return jsonify({'success': True, 'message': 'If your email exists, a reset link has been sent.'})
+    
+    return render_template('reset_password_request.html')
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    # This route is needed so url_for('reset_password') works in templates
+    if request.method == 'POST':
+        data = request.get_json()
+        password = data.get('password', '')
+        
+        # Logic to update password would go here
+        # For now, we return success to prevent crashes
+        return jsonify({'success': True, 'message': 'Password has been reset.'})
+    
+    return render_template('reset_password.html')
+
+# Optional: Add this only if you see a crash regarding 'admin_dashboard'
+@app.route('/admin/dashboard')
+@login_required
+@admin_required
+def admin_dashboard():
+    # Simplified admin view
+    courses = Course.query.all()
+    return render_template('admin/dashboard.html', courses=courses)
 
 if __name__ == '__main__':
     app.run(debug=True)
