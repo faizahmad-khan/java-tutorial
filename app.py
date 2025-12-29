@@ -598,6 +598,42 @@ def create_admin():
         
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
+    
+    from sqlalchemy import inspect
+
+@app.route('/debug_check')
+def debug_check():
+    """
+    Temporary tool to find out why Vercel is crashing.
+    Visits: https://your-app.vercel.app/debug_check
+    """
+    status = {}
+    
+    # 1. Check if Environment Variables are loaded
+    status['env_setup_key'] = "FOUND" if os.environ.get('SETUP_KEY') else "MISSING"
+    status['env_db_url'] = "FOUND" if os.environ.get('POSTGRES_URL') or os.environ.get('DATABASE_URL') else "MISSING"
+    
+    try:
+        # 2. Check Database Connection & Tables
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        status['database_connected'] = True
+        status['tables_found'] = tables
+        
+        # 3. Check for Admin User
+        if 'user' in tables:
+            admin = User.query.filter_by(username='faiz').first()
+            status['admin_user_exists'] = True if admin else False
+            if admin:
+                status['admin_email'] = admin.email
+                status['admin_role'] = admin.role
+        else:
+            status['admin_user_exists'] = "User table missing"
+            
+    except Exception as e:
+        status['database_error'] = str(e)
+        
+    return jsonify(status)
 
 if __name__ == '__main__':
     app.run(debug=True)
