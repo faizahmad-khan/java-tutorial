@@ -392,6 +392,13 @@ def home():
         courses = []
     return render_template('index.html', courses=courses)
 
+# ══════════════════════════════════════════════════════════════════════════════════════════════
+# 🔗 FRONTEND-BACKEND CONNECTION POINT #1: Run Java Code API
+# Connected to: static/script.js - runJavaCode() function (line ~180)
+# HTTP Method: POST | Endpoint: /api/run_code
+# Request: { code: string }
+# Response: { success: boolean, output: string, error: string }
+# ══════════════════════════════════════════════════════════════════════════════════════════════
 @app.route('/api/run_code', methods=['POST'])
 def run_code():
     return jsonify({
