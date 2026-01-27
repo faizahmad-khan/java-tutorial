@@ -169,7 +169,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Function to run Java code
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// 🔗 FRONTEND-BACKEND CONNECTION POINT #1: Run Java Code
+// Connected to: app.py - /api/run_code endpoint (line ~395)
+// This function sends Java code to the backend for compilation and execution
+// ══════════════════════════════════════════════════════════════════════════════════════════════
 async function runJavaCode() {
     outputDiv.textContent = "Compiling and running code...\n";
     
