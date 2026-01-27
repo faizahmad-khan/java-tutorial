@@ -38,6 +38,13 @@
 
 {% block scripts %}
 <script>
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// 🔗 FRONTEND-BACKEND CONNECTION POINT #3: User Registration
+// Connected to: app.py - /register endpoint
+// HTTP Method: POST
+// Request: { username, email, password }
+// Response: { success, redirect_url, message, errors }
+// ══════════════════════════════════════════════════════════════════════════════════════════════
 document.getElementById('register-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     

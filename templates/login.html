@@ -43,6 +43,13 @@
 </section>
 
 <script>
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// 🔗 FRONTEND-BACKEND CONNECTION POINT #2: User Login
+// Connected to: app.py - /login endpoint
+// HTTP Method: POST
+// Request: { username, password, remember, two_factor_token }
+// Response: { success, redirect_url, requires_2fa, message }
+// ══════════════════════════════════════════════════════════════════════════════════════════════
 document.getElementById('login-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
